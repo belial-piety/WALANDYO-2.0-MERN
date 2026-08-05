@@ -1,0 +1,101 @@
+<div class="page-header">
+  <div>
+    <h1>Staff Directory</h1>
+    <p class="page-sub">Manage system access and roles</p>
+  </div>
+  <button class="btn btn-primary" data-open-modal="addUserModal">+ Add User</button>
+</div>
+
+{{#if error}}
+  <div class="alert alert-error">{{error}}</div>
+{{/if}}
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Assigned Branch</th>
+        <th>Status</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#if staff.length}}
+        {{#each staff}}
+          <tr>
+            <td>{{full_name}}</td>
+            <td>{{username}}</td>
+            <td>{{capitalize role}}</td>
+            <td>{{#if branch_name}}{{branch_name}}{{else}}Global Access{{/if}}</td>
+            <td>{{#if is_active}}<span class="badge badge-green">Active</span>{{else}}<span class="badge badge-red">Disabled</span>{{/if}}</td>
+            <td class="text-right">
+              <form action="/staff/{{id}}/toggle" method="POST" class="inline-form">
+                <button type="submit" class="link-btn {{#if is_active}}link-btn-danger{{/if}}">
+                  {{#if is_active}}Disable{{else}}Enable{{/if}}
+                </button>
+              </form>
+            </td>
+          </tr>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="6" class="empty-cell">No users found.</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal" id="addUserModal">
+  <div class="modal-backdrop" data-close-modal="addUserModal"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Add New Staff Member</h2>
+      <button class="modal-close" data-close-modal="addUserModal">✕</button>
+    </div>
+    <form action="/staff" method="POST">
+      <div class="field-row">
+        <div>
+          <label class="field-label">Full Name</label>
+          <input class="field-input" name="full_name" required autofocus />
+        </div>
+        <div>
+          <label class="field-label">Username</label>
+          <input class="field-input" name="username" required />
+        </div>
+      </div>
+
+      <label class="field-label">Initial Password</label>
+      <input class="field-input" type="password" name="password" minlength="6" required />
+      <p class="field-hint">Must be at least 6 characters</p>
+
+      <div class="field-row">
+        <div>
+          <label class="field-label">System Role</label>
+          <select class="field-select" name="role">
+            <option value="cashier">Cashier</option>
+            <option value="manager">Manager</option>
+            <option value="inventory">Inventory Clerk</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Assign to Branch</label>
+          <select class="field-select" name="branch_id">
+            <option value="">Global Access (No branch)</option>
+            {{#each branches}}
+              <option value="{{id}}">{{name}}</option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="addUserModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create User</button>
+      </div>
+    </form>
+  </div>
+</div>
+

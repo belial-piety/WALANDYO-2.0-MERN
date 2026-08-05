@@ -1,0 +1,52 @@
+<div class="page-header">
+  <div>
+    <h1>Order History</h1>
+    <p class="page-sub">View and filter past transactions</p>
+  </div>
+  {{#unless lockBranch}}
+    <select class="field-select" onchange="location.href='/orders' + (this.value ? '?branch_id=' + this.value : '')">
+      <option value="">All Branches</option>
+      {{#each branches}}
+        <option value="{{id}}" {{#if (eq id ../selectedBranchId)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+  {{/unless}}
+</div>
+
+<div class="card">
+  <div class="card-title">Recent Transactions</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Date &amp; Time</th>
+        <th>Branch</th>
+        <th>Items</th>
+        <th>Payment</th>
+        <th>Status</th>
+        <th class="text-right">Total</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#if orders.length}}
+        {{#each orders}}
+          <tr>
+            <td>#{{id}}</td>
+            <td>{{formatDate created_at}}</td>
+            <td>{{branch_name}}</td>
+            <td>{{item_count}}</td>
+            <td>{{capitalize payment_method}}</td>
+            <td><span class="badge {{statusClass status}}">{{capitalize status}}</span></td>
+            <td class="text-right">{{formatCurrency total}}</td>
+            <td class="text-right">
+              <a href="/orders/{{id}}" class="link-btn" target="_blank">View</a>
+            </td>
+          </tr>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="8" class="empty-cell">No orders found.</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,79 @@
+<div class="page-header">
+  <div>
+    <h1>Inventory</h1>
+    <p class="page-sub">Track stock levels across all branches</p>
+  </div>
+  {{#unless lockBranch}}
+    <select class="field-select" onchange="location.href='/inventory' + (this.value ? '?branch_id=' + this.value : '')">
+      <option value="">All Branches</option>
+      {{#each branches}}
+        <option value="{{id}}" {{#if (eq id ../selectedBranchId)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+  {{/unless}}
+</div>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Branch</th>
+        <th>Status</th>
+        <th>Min. Level</th>
+        <th>Current Stock</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#if items.length}}
+        {{#each items}}
+          <tr>
+            <td>{{item_name}}</td>
+            <td>{{branch_name}}</td>
+            <td>
+              {{#if (eq status "out_of_stock")}}<span class="badge badge-red">Out of Stock</span>{{/if}}
+              {{#if (eq status "low")}}<span class="badge badge-amber">Low Stock</span>{{/if}}
+              {{#if (eq status "ok")}}<span class="badge badge-green">OK</span>{{/if}}
+            </td>
+            <td>{{min_level}} {{unit}}</td>
+            <td>{{current_stock}} {{unit}}</td>
+            <td class="text-right">
+              <button class="link-btn" data-open-modal="restockModal{{id}}">Restock</button>
+            </td>
+          </tr>
+
+          <div class="modal" id="restockModal{{id}}">
+            <div class="modal-backdrop" data-close-modal="restockModal{{id}}"></div>
+            <div class="modal-box modal-sm">
+              <div class="modal-header">
+                <h2>Restock: {{item_name}}</h2>
+                <button class="modal-close" data-close-modal="restockModal{{id}}">✕</button>
+              </div>
+              <p class="modal-note">{{branch_name}} · currently {{current_stock}} {{unit}}</p>
+              <form action="/inventory/{{id}}/restock" method="POST">
+                <label class="field-label">Quantity received</label>
+                <input class="field-input" type="number" min="1" name="quantity" required autofocus />
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-ghost" data-close-modal="restockModal{{id}}">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Add Stock</button>
+                </div>
+              </form>
+              <hr class="modal-divider" />
+              <form action="/inventory/{{id}}/min-level?_method=PUT" method="POST">
+                <label class="field-label">Update minimum stock level</label>
+                <div class="field-row">
+                  <input class="field-input" type="number" min="0" name="min_level" value="{{min_level}}" required />
+                  <button type="submit" class="btn btn-ghost">Update</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="6" class="empty-cell">No inventory records found.</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</div>
+

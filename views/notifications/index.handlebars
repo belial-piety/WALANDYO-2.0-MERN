@@ -1,0 +1,35 @@
+<div class="page-header">
+  <div>
+    <h1>Notifications</h1>
+    <p class="page-sub">Low-stock alerts across your branches</p>
+  </div>
+  {{#if notifications.length}}
+    <form action="/notifications/mark-all-read" method="POST">
+      <button type="submit" class="btn btn-secondary">Mark all as read</button>
+    </form>
+  {{/if}}
+</div>
+
+<div class="card">
+  {{#if notifications.length}}
+    <ul class="notif-list">
+      {{#each notifications}}
+        <li class="notif-item">
+          <div class="notif-icon">⚠️</div>
+          <div class="notif-body">
+            <div class="notif-message">{{message}}</div>
+            <div class="notif-meta">{{branch_name}} · {{formatDate created_at}}</div>
+          </div>
+          <form action="/notifications/{{id}}/read" method="POST">
+            <button type="submit" class="link-btn">Dismiss</button>
+          </form>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <div class="empty-state">
+      <div class="empty-icon">🔔</div>
+      <div>You're all caught up. No low-stock alerts right now.</div>
+    </div>
+  {{/if}}
+</div>

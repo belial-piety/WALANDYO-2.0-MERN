@@ -1,0 +1,75 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-badge">W</div>
+    <div class="brand-text">
+      <div class="brand-name">Walandyo</div>
+      <div class="brand-sub">TAPSILOGAN</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-label">Application</div>
+
+    {{#if (roleIn currentUser.role "admin,manager,cashier")}}
+      <a href="/counter" class="nav-link {{#if (eq active "counter")}}active{{/if}}">
+        <span class="nav-icon">🏠</span> POS Counter
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin,manager,cashier")}}
+      <a href="/orders" class="nav-link {{#if (eq active "orders")}}active{{/if}}">
+        <span class="nav-icon">🧾</span> Orders
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin,manager")}}
+      <a href="/menu" class="nav-link {{#if (eq active "menu")}}active{{/if}}">
+        <span class="nav-icon">🍳</span> Menu Items
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin,manager,inventory")}}
+      <a href="/inventory" class="nav-link {{#if (eq active "inventory")}}active{{/if}}">
+        <span class="nav-icon">📦</span> Inventory
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin,manager")}}
+      <a href="/reports" class="nav-link {{#if (eq active "reports")}}active{{/if}}">
+        <span class="nav-icon">📊</span> Reports
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin")}}
+      <a href="/branches" class="nav-link {{#if (eq active "branches")}}active{{/if}}">
+        <span class="nav-icon">📍</span> Branches
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin")}}
+      <a href="/staff" class="nav-link {{#if (eq active "staff")}}active{{/if}}">
+        <span class="nav-icon">👥</span> Staff
+      </a>
+    {{/if}}
+
+    {{#if (roleIn currentUser.role "admin,manager,inventory")}}
+      <a href="/notifications" class="nav-link {{#if (eq active "notifications")}}active{{/if}}">
+        <span class="nav-icon">🔔</span> Notifications
+        {{#if unreadNotifCount}}<span class="nav-badge">{{unreadNotifCount}}</span>{{/if}}
+      </a>
+    {{/if}}
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar">{{#if currentUser}}{{currentUser.full_name.[0]}}{{/if}}</div>
+      <div class="user-info">
+        <div class="user-name">{{currentUser.full_name}}</div>
+        <div class="user-role">{{capitalize currentUser.role}}{{#if currentUser.branch_id}} · Branch #{{currentUser.branch_id}}{{else}} · Global{{/if}}</div>
+      </div>
+    </div>
+    <form action="/logout" method="POST">
+      <button type="submit" class="logout-btn">Log out</button>
+    </form>
+  </div>
+</aside>

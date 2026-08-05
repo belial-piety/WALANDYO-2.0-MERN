@@ -1,0 +1,100 @@
+<div class="page-header">
+  <div>
+    <h1>Branches &amp; Locations</h1>
+    <p class="page-sub">Manage your physical stores and food trucks</p>
+  </div>
+  <button class="btn btn-primary" data-open-modal="addLocationModal">+ Add Location</button>
+</div>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Address</th>
+        <th>Status</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#if branches.length}}
+        {{#each branches}}
+          <tr>
+            <td>{{name}}</td>
+            <td>{{#if (eq type "food_truck")}}Food Truck{{else}}Physical Store{{/if}}</td>
+            <td>{{#if address}}{{address}}{{else}}—{{/if}}</td>
+            <td>{{#if is_active}}<span class="badge badge-green">Active</span>{{else}}<span class="badge badge-red">Inactive</span>{{/if}}</td>
+            <td class="text-right">
+              <button class="link-btn" data-open-modal="editLocationModal{{id}}">Edit</button>
+              <form action="/branches/{{id}}/toggle" method="POST" class="inline-form">
+                <button type="submit" class="link-btn {{#if is_active}}link-btn-danger{{/if}}">
+                  {{#if is_active}}Deactivate{{else}}Activate{{/if}}
+                </button>
+              </form>
+            </td>
+          </tr>
+
+          <div class="modal" id="editLocationModal{{id}}">
+            <div class="modal-backdrop" data-close-modal="editLocationModal{{id}}"></div>
+            <div class="modal-box">
+              <div class="modal-header">
+                <h2>Edit Location</h2>
+                <button class="modal-close" data-close-modal="editLocationModal{{id}}">✕</button>
+              </div>
+              <form action="/branches/{{id}}?_method=PUT" method="POST">
+                <label class="field-label">Location Name</label>
+                <input class="field-input" name="name" value="{{name}}" required />
+
+                <label class="field-label">Location Type</label>
+                <select class="field-select" name="type">
+                  <option value="branch" {{#if (eq type "branch")}}selected{{/if}}>Physical Store (Branch)</option>
+                  <option value="food_truck" {{#if (eq type "food_truck")}}selected{{/if}}>Food Truck</option>
+                </select>
+
+                <label class="field-label">Full Address</label>
+                <input class="field-input" name="address" value="{{address}}" placeholder="Street, City, Province" />
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-ghost" data-close-modal="editLocationModal{{id}}">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Location</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="5" class="empty-cell">No locations yet.</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal" id="addLocationModal">
+  <div class="modal-backdrop" data-close-modal="addLocationModal"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Add New Location</h2>
+      <button class="modal-close" data-close-modal="addLocationModal">✕</button>
+    </div>
+    <form action="/branches" method="POST">
+      <label class="field-label">Location Name</label>
+      <input class="field-input" name="name" placeholder="e.g. Taft Branch" required />
+
+      <label class="field-label">Location Type</label>
+      <select class="field-select" name="type">
+        <option value="branch">Physical Store (Branch)</option>
+        <option value="food_truck">Food Truck</option>
+      </select>
+
+      <label class="field-label">Full Address</label>
+      <input class="field-input" name="address" placeholder="Street, City, Province" />
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="addLocationModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Location</button>
+      </div>
+    </form>
+  </div>
+</div>
+

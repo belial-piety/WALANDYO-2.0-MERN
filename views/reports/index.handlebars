@@ -1,0 +1,120 @@
+<div class="page-header">
+  <div>
+    <h1>Business Reports</h1>
+    <p class="page-sub">Overview of sales and performance</p>
+  </div>
+</div>
+
+<div class="stat-cards">
+  <div class="stat-card stat-red">
+    <div class="stat-icon">💲</div>
+    <div>
+      <div class="stat-label">Today's Sales</div>
+      <div class="stat-value">{{formatCurrency overview.todaySales}}</div>
+    </div>
+  </div>
+  <div class="stat-card stat-amber">
+    <div class="stat-icon">🛍️</div>
+    <div>
+      <div class="stat-label">Today's Orders</div>
+      <div class="stat-value">{{overview.todayOrders}}</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon">📦</div>
+    <div>
+      <div class="stat-label">Low Stock Alerts</div>
+      <div class="stat-value">{{overview.lowStockAlerts}}</div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">🏠</div>
+    <div>
+      <div class="stat-label">Active Branches</div>
+      <div class="stat-value">{{overview.activeBranches}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab tab-active" data-tab="daily">Daily Overview</button>
+  <button class="tab" data-tab="branch">Branch Performance</button>
+</div>
+
+<div class="tab-panel" data-panel="daily">
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">Sales by Branch ({{today}})</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Branch</th><th>Orders</th><th class="text-right">Revenue</th></tr>
+      </thead>
+      <tbody>
+        {{#if overview.salesByBranch.length}}
+          {{#each overview.salesByBranch}}
+            <tr>
+              <td>{{name}}</td>
+              <td>{{order_count}}</td>
+              <td class="text-right">{{formatCurrency revenue}}</td>
+            </tr>
+          {{/each}}
+        {{else}}
+          <tr><td colspan="3" class="empty-cell">No sales recorded today.</td></tr>
+        {{/if}}
+      </tbody>
+      <tfoot>
+        <tr class="totals-foot">
+          <td colspan="2"><strong>Total Revenue</strong></td>
+          <td class="text-right"><strong>{{formatCurrency overview.totalRevenue}}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<div class="tab-panel tab-panel-hidden" data-panel="branch">
+  <div class="card">
+    <div class="card-title-row">
+      <div>
+        <div class="card-title">Detailed Branch Report</div>
+        <p class="card-sub">Select a branch to view top items</p>
+      </div>
+      <select class="field-select" onchange="location.href='/reports?perf_branch_id=' + this.value">
+        <option value="">Select a branch</option>
+        {{#each branches}}
+          <option value="{{id}}" {{#if (eq id ../perfBranchId)}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    {{#if performance}}
+      <div class="perf-summary">
+        <div><span>Total Revenue</span><strong>{{formatCurrency performance.revenue}}</strong></div>
+        <div><span>Total Orders</span><strong>{{performance.orderCount}}</strong></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Item</th><th>Qty Sold</th><th class="text-right">Revenue</th></tr></thead>
+        <tbody>
+          {{#if performance.topItems.length}}
+            {{#each performance.topItems}}
+              <tr>
+                <td>{{item_name}}</td>
+                <td>{{qty_sold}}</td>
+                <td class="text-right">{{formatCurrency revenue}}</td>
+              </tr>
+            {{/each}}
+          {{else}}
+            <tr><td colspan="3" class="empty-cell">No completed sales yet for this branch.</td></tr>
+          {{/if}}
+        </tbody>
+      </table>
+    {{else}}
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div>Please select a branch to view its report</div>
+      </div>
+    {{/if}}
+  </div>
+</div>
+

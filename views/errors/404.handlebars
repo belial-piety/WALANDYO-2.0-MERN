@@ -1,0 +1,6 @@
+<div class="error-page">
+  <div class="error-icon">🔎</div>
+  <h1>{{#if message}}Something went wrong{{else}}Page not found{{/if}}</h1>
+  <p>{{#if message}}{{message}}{{else}}That page doesn't exist or has moved.{{/if}}</p>
+  <a href="/counter" class="btn btn-primary">Back to Counter</a>
+</div>

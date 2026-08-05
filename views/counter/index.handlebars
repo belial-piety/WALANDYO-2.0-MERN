@@ -1,0 +1,88 @@
+<div class="counter-layout">
+  <section class="menu-pane">
+    <div class="menu-pane-header">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="menuSearch" placeholder="Search menu..." />
+      </div>
+      <div class="category-tabs" id="categoryTabs">
+        <button class="chip chip-active" data-category="all">All Items</button>
+      </div>
+    </div>
+
+    <div class="menu-grid" id="menuGrid">
+      {{#if menuItems.length}}
+        {{#each menuItems}}
+          <button
+            class="menu-card {{#if (eq current_stock 0)}}menu-card-disabled{{/if}}"
+            data-id="{{id}}"
+            data-name="{{name}}"
+            data-price="{{price}}"
+            data-category="{{category_name}}"
+            data-stock="{{current_stock}}"
+            {{#if (eq current_stock 0)}}disabled{{/if}}
+          >
+            <div class="menu-card-thumb">
+              {{#if image_url}}<img src="{{image_url}}" alt="{{name}}" />{{else}}🍽️{{/if}}
+            </div>
+            <div class="menu-card-name">{{name}}</div>
+            <div class="menu-card-price">{{formatCurrency price}}</div>
+            <div class="menu-card-stock">{{#if (eq current_stock 0)}}Out of stock{{else}}{{current_stock}} left{{/if}}</div>
+          </button>
+        {{/each}}
+      {{else}}
+        <div class="empty-state">
+          <div class="empty-icon">🍽️</div>
+          <div>No menu items found.</div>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+
+  <aside class="order-pane">
+    <div class="order-pane-header">
+      <div><span class="order-icon">🧾</span> Current Order</div>
+      <span class="badge badge-amber" id="cartCount">0 items</span>
+    </div>
+
+    <div class="branch-select-row">
+      {{#if lockBranch}}
+        <input type="hidden" id="branchId" value="{{selectedBranchId}}" />
+        <div class="static-branch">{{#each branches}}{{#if (eq id ../selectedBranchId)}}{{name}}{{/if}}{{/each}}</div>
+      {{else}}
+        <select id="branchId" class="field-select" onchange="location.href='/counter?branch_id=' + this.value">
+          {{#each branches}}
+            <option value="{{id}}" {{#if (eq id ../selectedBranchId)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </select>
+      {{/if}}
+    </div>
+
+    <div class="cart-list" id="cartList">
+      <div class="empty-state small" id="cartEmpty">
+        <div class="empty-icon">🛍️</div>
+        <div>Cart is empty</div>
+      </div>
+    </div>
+
+    <div class="order-totals">
+      <div class="totals-row"><span>Subtotal</span><span id="subtotalDisplay">₱0.00</span></div>
+      <div class="totals-row"><span>Tax ({{#if taxRate}}{{taxRate}}{{else}}Included{{/if}})</span><span id="taxDisplay">₱0.00</span></div>
+      <div class="totals-row totals-total"><span>Total</span><span id="totalDisplay">₱0.00</span></div>
+    </div>
+
+    <div class="payment-methods">
+      <div class="field-label">PAYMENT METHOD</div>
+      <div class="payment-buttons">
+        <button class="pay-btn pay-btn-active" data-method="cash">💵 Cash</button>
+        <button class="pay-btn" data-method="gcash">🅖 GCash</button>
+        <button class="pay-btn" data-method="card">💳 Card</button>
+      </div>
+    </div>
+
+    <button class="btn btn-charge" id="chargeBtn" disabled>Charge ₱0.00</button>
+  </aside>
+</div>
+
+<script id="taxRateData" type="application/json">{{taxRate}}</script>
+<script src="/js/counter.js"></script>

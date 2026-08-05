@@ -1,0 +1,135 @@
+<div class="page-header">
+  <div>
+    <h1>Menu Management</h1>
+    <p class="page-sub">Manage your products and categories</p>
+  </div>
+  <button class="btn btn-primary" data-open-modal="addItemModal">+ Add Item</button>
+</div>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Item Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#if items.length}}
+        {{#each items}}
+          <tr>
+            <td><div class="thumb-sm">{{#if image_url}}<img src="{{image_url}}" alt="">{{else}}🍽️{{/if}}</div></td>
+            <td>{{name}}</td>
+            <td>{{#if category_name}}{{category_name}}{{else}}—{{/if}}</td>
+            <td>{{formatCurrency price}}</td>
+            <td>
+              {{#if is_available}}<span class="badge badge-green">Available</span>{{else}}<span class="badge badge-red">Hidden</span>{{/if}}
+            </td>
+            <td class="text-right">
+              <button class="link-btn" data-open-modal="editItemModal{{id}}">Edit</button>
+              <form action="/menu/{{id}}?_method=DELETE" method="POST" class="inline-form" onsubmit="return confirm('Delete {{name}}? This cannot be undone.')">
+                <button type="submit" class="link-btn link-btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+
+          <div class="modal" id="editItemModal{{id}}">
+            <div class="modal-backdrop" data-close-modal="editItemModal{{id}}"></div>
+            <div class="modal-box">
+              <div class="modal-header">
+                <h2>Edit Menu Item</h2>
+                <button class="modal-close" data-close-modal="editItemModal{{id}}">✕</button>
+              </div>
+              <form action="/menu/{{id}}?_method=PUT" method="POST">
+                <label class="field-label">Item Name</label>
+                <input class="field-input" name="name" value="{{name}}" required />
+
+                <div class="field-row">
+                  <div>
+                    <label class="field-label">Price (₱)</label>
+                    <input class="field-input" type="number" step="0.01" min="0" name="price" value="{{price}}" required />
+                  </div>
+                  <div>
+                    <label class="field-label">Category</label>
+                    <select class="field-select" name="category_id">
+                      <option value="">Select category</option>
+                      {{#each ../categories}}
+                        <option value="{{id}}" {{#if (eq id ../category_id)}}selected{{/if}}>{{name}}</option>
+                      {{/each}}
+                    </select>
+                  </div>
+                </div>
+
+                <label class="field-label">Image URL</label>
+                <input class="field-input" name="image_url" value="{{image_url}}" placeholder="https://..." />
+
+                <label class="toggle-row">
+                  <input type="checkbox" name="is_available" {{#if is_available}}checked{{/if}} />
+                  <span class="toggle-track"></span> Available for sale
+                </label>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-ghost" data-close-modal="editItemModal{{id}}">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Item</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="6" class="empty-cell">No items found.</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal" id="addItemModal">
+  <div class="modal-backdrop" data-close-modal="addItemModal"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Add Menu Item</h2>
+      <button class="modal-close" data-close-modal="addItemModal">✕</button>
+    </div>
+    <form action="/menu" method="POST">
+      <label class="field-label">Item Name</label>
+      <input class="field-input" name="name" placeholder="e.g. Beef Tapsilog" required />
+
+      <div class="field-row">
+        <div>
+          <label class="field-label">Price (₱)</label>
+          <input class="field-input" type="number" step="0.01" min="0" name="price" required />
+        </div>
+        <div>
+          <label class="field-label">Category</label>
+          <select class="field-select" name="category_id">
+            <option value="">Select category</option>
+            {{#each categories}}
+              <option value="{{id}}">{{name}}</option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+
+      <label class="field-label">Or new category</label>
+      <input class="field-input" name="new_category" placeholder="Leave blank to use the dropdown above" />
+
+      <label class="field-label">Image URL</label>
+      <input class="field-input" name="image_url" placeholder="https://..." />
+
+      <label class="toggle-row">
+        <input type="checkbox" name="is_available" checked />
+        <span class="toggle-track"></span> Available for sale
+      </label>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="addItemModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+

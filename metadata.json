@@ -1,0 +1,6 @@
+{
+  "name": "Walandyo Tapsilogan POS",
+  "description": "Multi-branch POS, inventory, and reporting web app for Walandyo Tapsilogan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

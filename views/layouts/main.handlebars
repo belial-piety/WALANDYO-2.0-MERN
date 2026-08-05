@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{title}} · Walandyo Tapsilogan POS</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    {{> sidebar}}
+
+    <div class="main-col">
+      {{> topbar}}
+      <main class="page">
+        {{{body}}}
+      </main>
+    </div>
+  </div>
+  <script src="/js/modals.js"></script>
+</body>
+</html>

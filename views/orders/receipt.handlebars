@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Receipt #{{order.id}} · Walandyo Tapsilogan</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="receipt-body">
+  <div class="receipt">
+    <div class="receipt-header">
+      <div class="brand-badge">W</div>
+      <h1>Walandyo Tapsilogan</h1>
+      <p>{{order.branch_name}}</p>
+      <p class="receipt-tagline">"Sabaw pa lang, ulam na!"</p>
+    </div>
+
+    <div class="receipt-meta">
+      <div><span>Order #</span><span>{{order.id}}</span></div>
+      <div><span>Date</span><span>{{formatDate order.created_at}}</span></div>
+      <div><span>Cashier</span><span>{{order.cashier_name}}</span></div>
+      <div><span>Status</span><span>{{capitalize order.status}}</span></div>
+    </div>
+
+    <table class="receipt-table">
+      <thead>
+        <tr><th>Item</th><th>Qty</th><th class="text-right">Amount</th></tr>
+      </thead>
+      <tbody>
+        {{#each order.items}}
+          <tr>
+            <td>{{item_name}}</td>
+            <td>{{quantity}}</td>
+            <td class="text-right">{{formatCurrency line_total}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class="receipt-totals">
+      <div><span>Subtotal</span><span>{{formatCurrency order.subtotal}}</span></div>
+      <div><span>Tax</span><span>{{formatCurrency order.tax}}</span></div>
+      <div class="receipt-grand-total"><span>Total</span><span>{{formatCurrency order.total}}</span></div>
+      <div><span>Payment</span><span>{{capitalize order.payment_method}}</span></div>
+    </div>
+
+    <div class="receipt-actions no-print">
+      <button onclick="window.print()" class="btn btn-primary">Print Receipt</button>
+      <form action="/orders/{{order.id}}/reprint" method="POST">
+        <button type="submit" class="btn btn-secondary">Log Reprint</button>
+      </form>
+      {{#if (eq order.status "completed")}}
+        <form action="/orders/{{order.id}}/void" method="POST" onsubmit="return confirm('Void this order and restore stock?')">
+          <input type="hidden" name="reason" value="Voided by cashier from receipt view" />
+          <button type="submit" class="btn btn-danger">Void Order</button>
+        </form>
+      {{/if}}
+    </div>
+  </div>
+</body>
+</html>
