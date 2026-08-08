@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../api/axiosClient';
-import { DollarSign, ShoppingBag, AlertTriangle, Building2 } from 'lucide-react';
+import { PhilippinePeso, ShoppingBag, AlertTriangle, Building2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export const ReportsPage = () => {
@@ -68,7 +68,7 @@ export const ReportsPage = () => {
             <div className="stat-value">₱{(dailyOverview?.todayRevenue || 0).toFixed(2)}</div>
             <div className="stat-label">TODAY'S REVENUE</div>
           </div>
-          <DollarSign size={28} color="#cf1f21" style={{ marginLeft: 'auto' }} />
+<PhilippinePeso size={28} color="#cf1f21" style={{ marginLeft: 'auto' }} />
         </div>
 
         <div className="stat-card stat-blue">
