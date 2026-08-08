@@ -6,6 +6,7 @@ import Modal from '../../components/common/Modal';
 export const MenuPage = () => {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [staticImages, setStaticImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
@@ -41,9 +42,19 @@ export const MenuPage = () => {
     }
   }, []);
 
+  const loadStaticImages = useCallback(async () => {
+    try {
+      const res = await api.get('/menu-items/images', {});
+      if (res.success) setStaticImages(res.data);
+    } catch (err) {
+      console.error('Error loading static images', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadStaticImages();
+  }, [loadData, loadStaticImages]);
 
   const handleOpenCreate = () => {
     setEditingItem(null);
@@ -182,6 +193,7 @@ export const MenuPage = () => {
           <table className="data-table">
             <thead>
               <tr>
+                <th style={{ width: '60px' }}>Image</th>
                 <th>Item Name</th>
                 <th>Category</th>
                 <th style={{ textAlign: 'right' }}>Price</th>
@@ -192,6 +204,31 @@ export const MenuPage = () => {
             <tbody>
               {filteredItems.map((item) => (
                 <tr key={item._id}>
+                  <td>
+                    <div
+                      style={{
+                        width: '44px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        background: '#f4f5ef',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        fontSize: '16px',
+                      }}
+                    >
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        '🍳'
+                      )}
+                    </div>
+                  </td>
                   <td style={{ fontWeight: 600 }}>{item.name}</td>
                   <td>{item.category ? item.category.name : 'Uncategorized'}</td>
                   <td style={{ textAlign: 'right', fontWeight: 700 }}>
@@ -281,11 +318,86 @@ export const MenuPage = () => {
               required
             />
 
-            <label className="field-label">Image URL (Optional)</label>
+            <label className="field-label">Product Image</label>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))',
+                gap: '8px',
+                marginBottom: '8px',
+              }}
+            >
+              {/* No image option */}
+              <div
+                onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                title="No image"
+                style={{
+                  aspectRatio: '1',
+                  borderRadius: '8px',
+                  border: `2px solid ${formData.imageUrl === '' ? '#cf1f21' : '#e6e3d8'}`,
+                  background: '#f4f5ef',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                }}
+              >
+                🚫
+              </div>
+              {staticImages.map((img) => (
+                <div
+                  key={img.filename}
+                  onClick={() => setFormData({ ...formData, imageUrl: img.url })}
+                  title={img.filename}
+                  style={{
+                    aspectRatio: '1',
+                    borderRadius: '8px',
+                    border: `2px solid ${formData.imageUrl === img.url ? '#cf1f21' : '#e6e3d8'}`,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    background: '#f4f5ef',
+                  }}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.filename}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {formData.imageUrl && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '8px 10px',
+                  background: '#f9faf5',
+                  border: '1px solid #e6e3d8',
+                  borderRadius: '8px',
+                }}
+              >
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
+                  style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }}
+                />
+                <span
+                  style={{ fontSize: '12px', color: '#8a8578', wordBreak: 'break-all', flex: 1 }}
+                >
+                  {formData.imageUrl}
+                </span>
+              </div>
+            )}
+
+            <label className="field-label">External Image URL (Optional)</label>
             <input
               type="url"
               className="field-input"
-              value={formData.imageUrl}
+              value={formData.imageUrl && !staticImages.some((i) => i.url === formData.imageUrl) ? formData.imageUrl : ''}
               onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
               placeholder="https://..."
             />

@@ -1,294 +1,151 @@
 # Walandyo Tapsilogan — Integrated POS System
 
 A multi-branch Point-of-Sale, inventory, and reporting web app built for
-Walandyo Tapsilogan (4 branches + 1 food truck), following the MVC pattern
-with **Node.js + Express + Handlebars + MySQL**.
+**Walandyo Tapsilogan** (4 branches + 1 food truck).
 
-Built from the project requirements paper (ISANDE1) and the Figma mockups
-supplied alongside it — screens, copy, and the red/cream color scheme follow
-the mockups directly.
+This is a **MERN** (MongoDB + Express + React) application:
+
+- **Backend / API:** Node.js + Express (`server/`)
+- **Database:** MongoDB via Mongoose (`server/models/`)
+- **Frontend:** React + Vite SPA (`client/`)
+
+The app comes with **auto-seeding** and an **embedded in-memory database**, so
+you can install and run it with almost no configuration.
 
 ---
 
 ## 🧑‍🍳 Beginner's Guide — Installing & Running This (No Coding Experience Needed)
 
-This section walks through everything from a completely empty computer to a
-working app in your browser, one click/command at a time. If you've never
-used a "terminal" or "command prompt" before, start here. (If you're
-comfortable with the command line already, the shorter **Setup** section
-further down covers the same ground faster.)
+### Part 1 — Install the one program you need (one-time only)
 
-### Part 1 — Install the two programs you need (one-time only)
-
-You need two free programs installed before anything else will work:
-**Node.js** (runs the app) and **MySQL** (stores the data).
-
-**1a. Install Node.js**
+**Node.js** is the only required program.
 
 1. Go to **https://nodejs.org**
-2. Click the big green button that says **LTS** (this means "Long Term
-   Support" — the stable version).
+2. Click the big green button labeled **LTS** (stable version).
 3. Open the downloaded file and click Next/Continue through the installer,
    accepting the defaults, until it finishes.
-4. To check it worked, open a terminal (see Part 2 below) and type:
+4. To verify, open a terminal (see Part 2) and type:
    ```
    node -v
    ```
-   Press Enter. If you see something like `v22.x.x` printed back, it worked.
+   Press **Enter**. You should see something like `v18.x.x` or newer.
 
-**1b. Install MySQL**
-
-1. Go to **https://dev.mysql.com/downloads/installer/** (Windows) or
-   **https://dev.mysql.com/downloads/mysql/** (Mac).
-2. Download and run the installer. Choose the default **"Developer Default"**
-   setup if asked — this also installs **MySQL Workbench**, a visual tool
-   we'll use later so you don't have to type database commands by hand.
-3. At some point the installer will ask you to **set a root password**.
-   Pick something you'll remember and **write it down** — you'll need it
-   twice more later in this guide.
-4. Finish the installer with the defaults.
+> **Optional builders:** The app uses an embedded in-memory database by
+> default, so **you do not need to install MongoDB or MySQL**. If you prefer
+> to use your own MongoDB server, see the "Custom MongoDB server" heading
+> further down.
 
 ### Part 2 — Open a terminal (command prompt)
 
-You'll use this a handful of times. It's just a window where you type
-commands instead of clicking icons.
-
-- **Windows:** Click the Start menu, type `cmd`, and open **Command Prompt**.
+- **Windows:** Click the Start menu, type `cmd`, and open **Command Prompt**
+  (or use PowerShell / the terminal built into VS Code).
 - **Mac:** Open **Finder → Applications → Utilities → Terminal**.
 
-Keep this window open for the rest of the guide.
+### Part 3 — Go into the project folder
 
-### Part 3 — Unzip the project
+Type `cd ` (with a space after it), then drag the `WALANDYO-2.0-MERN` folder
+from your file explorer into the terminal window (this auto-fills the path),
+then press **Enter**. It should look something like:
 
-1. Find the `walandyo-pos.zip` file you downloaded and **unzip it** (on
-   Windows, right-click → "Extract All"; on Mac, just double-click it).
-2. Put the resulting `walandyo-pos` folder somewhere easy to find, like your
-   Desktop.
-3. In your terminal, navigate into that folder. Type `cd ` (with a space
-   after it), then drag the `walandyo-pos` folder from your file explorer
-   straight into the terminal window — it will auto-fill the path — then
-   press Enter. It should look something like:
-   ```
-   cd C:\Users\YourName\Desktop\walandyo-pos
-   ```
-   or on Mac:
-   ```
-   cd /Users/YourName/Desktop/walandyo-pos
-   ```
+```
+cd C:\Users\YourName\Desktop\Coding Projects\WALANDYO-2.0-MERN
+```
 
 ### Part 4 — Install the app's building blocks
 
 In the same terminal window, type:
+
 ```
 npm install
 ```
-Press Enter and wait — this downloads everything the app needs to run. It
-can take a minute or two. You'll know it's done when you see your cursor
-blinking on a new line with no more text scrolling. (Some yellow "warnings"
-are normal and fine to ignore; only worry if you see the word `Error` in red.)
 
-### Part 5 — Create the database
+Press **Enter** and wait. This downloads everything the app needs to run and
+can take a minute or two. You'll know it's done when your cursor returns to a
+new line with no more text scrolling. (Yellow "warnings" are normal; only
+worry if you see the word `Error` in red.)
 
-We'll use **MySQL Workbench** (installed in Part 1b) so you don't have to
-type SQL commands manually.
-
-1. Open **MySQL Workbench** from your Start menu / Applications folder.
-2. Click on the connection tile that says something like **"Local instance
-   MySQL"**. Enter the root password you set in Part 1b when prompted.
-3. Once connected, go to the menu **File → Open SQL Script...** and select
-   the `schema.sql` file inside the `walandyo-pos/db/` folder.
-4. The script will appear in a text editor tab. Click the **⚡ lightning
-   bolt icon** (or press Ctrl+Shift+Enter / Cmd+Shift+Enter) to run it.
-5. On the left sidebar, under "Schemas", you should now see a new database
-   called **`walandyo_pos`** with several tables inside it. That means it
-   worked.
-
-### Part 6 — Tell the app your database password
-
-1. Inside the `walandyo-pos` folder, find the file called **`.env.example`**.
-2. Make a copy of it and rename the copy to **`.env`** (just `.env`, nothing
-   else — if your computer hides file extensions, you may need to enable
-   "show file extensions" in your file explorer settings to do this correctly).
-3. Open `.env` with any plain text editor (Notepad on Windows, TextEdit on
-   Mac — right-click the file → "Open with").
-4. Find the line `DB_PASSWORD=your_mysql_password` and replace
-   `your_mysql_password` with the root password you set in Part 1b.
-5. Save the file and close it.
-
-### Part 7 — Add sample data
-
-Back in your terminal (same window as before), type:
-```
-npm run seed
-```
-Press Enter. This fills the database with example branches, menu items, and
-one login for each staff role, so you have something to look at right away.
-
-### Part 8 — Start the app
+### Part 5 — Start the app
 
 Type:
+
 ```
 npm start
 ```
-Press Enter. You should see a message like:
+
+Press **Enter**. You should see messages that include:
+
 ```
-Walandyo Tapsilogan POS running at http://localhost:3000
+[DB] Starting embedded MongoMemoryReplSet ...
+[Server] Walandyo POS server running on http://0.0.0.0:3000
 ```
-**Leave this terminal window open** — closing it stops the app. Now open
-your web browser (Chrome, Edge, Safari — any of them) and go to:
+
+**Leave this terminal window open** — closing it stops the app.
+
+Now open your web browser (Chrome, Edge, Safari — any of them) and go to:
 
 **http://localhost:3000**
 
 You should land on a login page. 🎉
 
-### Part 9 — Log in
+### Part 6 — Log in
 
-Use one of these to explore (also listed below in **Demo logins**):
+Use one of these demo accounts to explore (full list under **Demo logins**):
 
 | Role | Username | Password |
 |---|---|---|
 | Owner/Admin (sees everything) | `admin` | `admin123` |
 | Cashier (rings up orders) | `cashier1` | `cashier123` |
 
-When you're done, you can close the browser tab any time. To stop the app
-completely, click into the terminal window and press **Ctrl+C**. To run it
-again later, you only need to repeat **Part 8** (`npm start`) — Parts 1–7
-are one-time setup.
+When you're done, close the browser tab any time. To stop the app, click into
+the terminal window and press **Ctrl+C**. To run it again later, just repeat
+**Part 5** (`npm start`) — Parts 1–4 are one-time setup.
 
 ---
 
 ## 📖 How to Use the Program
 
-Once you're logged in, here's what each part of the sidebar does.
+Once logged in, here's what each part of the sidebar does.
 
-**POS Counter** (Cashier, Manager, Admin) — This is the main ordering
-screen. Click a menu item to add it to the cart on the right. Click the `+`
-and `−` buttons to adjust quantity, or the `✕` to remove an item. Choose a
-payment method (Cash, GCash, or Card), then click the big red **Charge**
-button at the bottom to complete the sale. A receipt opens automatically —
-you can print it or close it.
-
-**Orders** (Cashier, Manager, Admin) — A list of past transactions. Click
-**View** on any row to see the full receipt, reprint it, or **void** it
-(cancels the sale and puts the stock back).
-
-**Menu Items** (Manager, Admin) — Add, edit, or remove what's for sale.
-Click **+ Add Item** to create a new dish, fill in its name, price, and
-category, then **Save Item**. Toggling "Available for sale" off hides it
-from the Counter screen without deleting it.
-
-**Inventory** (Inventory Clerk, Manager, Admin) — Shows current stock for
-every item at every branch, with a status badge (green = OK, amber = low,
-red = out of stock). When a delivery comes in, find the item and use the
-restock action to add to its count.
-
-**Reports** (Manager, Admin) — Today's total sales, order count, and
-low-stock alerts at a glance. Switch to the "Branch Performance" tab and
-pick a branch to see its best-selling items.
-
-**Branches** (Admin only) — Add a new store location or food truck, or edit
-an existing one's name/address.
-
-**Staff** (Admin only) — Create logins for new employees. Pick their role
-(this controls what they can see) and, unless they're an Admin, which
-branch they're assigned to.
-
-**Notifications** (Inventory Clerk, Manager, Admin) — A running list of
-low-stock alerts so nothing runs out unnoticed.
+- **POS Counter** (Cashier, Manager, Admin) — The main ordering screen. The
+  left side shows food/drink cards filtered by category and searchable. Click
+  a card to add it to the cart on the right. Use `+`/`−` to adjust quantity
+  or `✕` to remove an item. Choose a payment method (Cash, GCash, Card),
+  then click the big red **Charge** button to complete the sale. A receipt
+  opens automatically — print it or close it.
+- **Menu Items** (Manager, Admin) — Add, edit, or archive what's for sale.
+  Use **+ Add Menu Item**, fill in name, category, and price. In the
+  **"Product Image"** section you can **assign a bundled static image** by
+  clicking one of the thumbnail tiles (or choose **No Image** with the 🚫
+  tile, or paste an external URL). Toggling "Available for sale on POS" off
+  hides the item from the Counter. Every row also shows a small image
+  thumbnail for quick reference.
+- **Orders** (Cashier, Manager, Admin) — A list of past transactions with
+  view/print/void actions.
+- **Inventory** (Inventory Clerk, Manager, Admin) — Current stock per item
+  per branch with status badges (green = OK, amber = low, red = out of
+  stock), plus restock actions.
+- **Reports** (Manager, Admin) — Daily sales overview, order count, and
+  low-stock alerts; plus per-branch performance.
+- **Branches** (Admin only) — Add or edit store locations / food trucks.
+- **Staff** (Admin only) — Create employee logins and assign roles/branches.
+- **Notifications** (Inventory Clerk, Manager, Admin) — A running list of
+  low-stock alerts.
 
 ### If something goes wrong
 
 - **`npm` isn't recognized / command not found:** Node.js didn't install
-  correctly, or you opened the terminal before installing it — close the
+  correctly, or you opened the terminal before (re)installing it. Close the
   terminal, reopen a new one, and try again.
-- **"Access denied for user 'root'"** when starting the app: the password
-  in your `.env` file doesn't match your actual MySQL root password —
-  double check Part 6.
-- **"Port 3000 is already in use":** something else on your computer is
-  already using that address. Close other running copies of the app, or
-  open `.env` and change `PORT=3000` to `PORT=3001`, then visit
-  `http://localhost:3001` instead.
+- **"Port 3000 is already in use":** another app is using that address.
+  Close other running copies, or set `PORT` to a different value (see the
+  **Custom MongoDB server** example below for where to put variables).
 - **The browser says it can't connect:** make sure the terminal window from
-  Part 8 is still open and still running — if you closed it, the app stopped.
+  Part 5 is still open and running — if you closed it, the app stopped.
+- **The database appears empty after an update:** the embedded database is
+  in memory and resets on restart. Run the seeder again to reload demo data
+  (see below).
 
 ---
-
-## Tech stack
-
-- **Backend:** Node.js, Express (Controllers)
-- **Views:** express-handlebars (Views) — server-rendered HTML, no build step
-- **Database:** MySQL via `mysql2` (Models)
-- **Auth:** `express-session` + `bcryptjs` password hashing, role-based middleware
-- **Frontend interactivity:** vanilla JS (POS cart, modals) — no framework, no bundler
-
-## Project structure (MVC)
-
-```
-walandyo-pos/
-├── server.js              # App entry point: Handlebars/session/route setup
-├── config/db.js           # MySQL connection pool
-├── db/
-│   ├── schema.sql         # Full DDL — run this first
-│   └── seed.js            # Demo data + one login per role
-├── models/                 # M — one file per entity, all SQL lives here
-├── controllers/             # C — request handling, calls models, renders views
-├── routes/                  # Maps URLs to controllers + role middleware
-├── middleware/auth.js       # requireAuth / requireRole / view locals
-├── views/                   # V — Handlebars templates
-│   ├── layouts/main.handlebars
-│   ├── partials/           # sidebar, topbar
-│   └── <module>/index.handlebars
-└── public/                  # Static CSS/JS served as-is
-```
-
-## Setup
-
-*(This is the condensed, command-line version. If you'd rather follow along
-click-by-click, see the "Beginner's Guide" section above instead.)*
-
-**1. Install dependencies** (requires internet access on your machine):
-
-```bash
-cd walandyo-pos
-npm install
-```
-
-**2. Create the database:**
-
-```bash
-mysql -u root -p < db/schema.sql
-```
-
-This creates the `walandyo_pos` database and all tables.
-
-**3. Configure environment variables:**
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and fill in your MySQL credentials (`DB_USER`, `DB_PASSWORD`, etc.)
-and a random `SESSION_SECRET`.
-
-**4. Seed demo data** (branches, menu items, per-branch stock, one login per role):
-
-```bash
-npm run seed
-```
-
-**5. Run it:**
-
-```bash
-npm start
-```
-
-Visit **http://localhost:3000** — you'll be redirected to `/login`.
-
-For auto-restart on file changes during development:
-
-```bash
-npm run dev
-```
 
 ## Demo logins
 
@@ -301,7 +158,112 @@ npm run dev
 
 (Passwords are bcrypt-hashed in the database — never stored in plaintext.)
 
-## Role-based access (from the requirements paper, section 4.1)
+---
+
+## Setup & Configuration
+
+### Default (zero-config) run
+
+Just install and start:
+
+```bash
+npm install
+npm start
+```
+
+The first time it starts, the app:
+1. Connects to an **embedded in-memory MongoDB** (no external install needed).
+2. **Auto-seeds** the database (branches, categories, menu items with
+   images, per-branch inventory, demo users, and a sample order).
+
+Access the app at **http://localhost:3000**.
+
+### Environment variables (`.env`)
+
+Copy `.env.example` to `.env` and edit if you want to customise the setup:
+
+```bash
+cp .env.example .env
+```
+
+Key variables (without a value, the app uses sensible defaults):
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `PORT` | Port the server listens on | `3000` |
+| `MONGODB_URI` | Connection string for your own MongoDB | `embedded` (in-memory) |
+| `NODE_ENV` | `development` or `production` | `development` |
+
+### Custom MongoDB server
+
+If you want to use a real/remote MongoDB instead of the in-memory one, set
+`MONGODB_URI` in `.env`, e.g.:
+
+```
+MONGODB_URI=mongodb://127.0.0.1:27017/walandyo_pos
+```
+
+Then run `npm start` as usual. The app will connect to that database instead.
+
+### Re-seeding demo data
+
+To wipe and reload the demo data manually:
+
+```bash
+npm run seed
+```
+
+### Production build
+
+The client is bundled by Vite. To build static assets for production:
+
+```bash
+npm run build
+```
+
+In production mode (`NODE_ENV=production`) the server serves the built files
+from `dist/public`.
+
+---
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm start` | Runs the server (default `node server.js`) |
+| `npm run dev` | Same as start (also serves the Vite dev client) |
+| `npm run seed` | Wipes and re-seeds the demo database |
+| `npm run build` | Builds the React client into `dist/public` |
+
+---
+
+## Project structure
+
+```
+WALANDYO-2.0-MERN/
+├── server.js               # App entry point (boots DB + API + Vite client)
+├── package.json            # Dependencies + scripts
+├── .env.example            # Example environment variables
+├── client/                 # React + Vite frontend
+│   └── src/
+│       ├── pages/          # Counter, Menu, Orders, Inventory, Reports, etc.
+│       ├── components/     # Shared UI (Modal, Sidebar, Topbar, ...)
+│       ├── contexts/       # Auth + Notifications React contexts
+│       └── api/            # Fetch wrapper (axiosClient)
+└── server/                 # Express backend (MERN API)
+    ├── app.js              # Express app + route mounting + static images
+    ├── config/db.js        # Mongoose / embedded MongoDB connection
+    ├── models/             # Mongoose schemas (MenuItem, Order, Branch, ...)
+    ├── controllers/        # Request handlers
+    ├── routes/             # API routes
+    ├── middleware/         # Auth + error handling
+    ├── scripts/seed.js     # Demo data seeder
+    └── public/menu-images/ # Bundled static food images served at /images/*
+```
+
+---
+
+## Role-based access
 
 | Role | Can access |
 |---|---|
@@ -310,56 +272,38 @@ npm run dev
 | **Cashier** | Counter, Orders (their branch only) |
 | **Inventory Clerk** | Inventory, Notifications (their branch only) |
 
-Routes are guarded server-side in `middleware/auth.js` + each `routes/*.js`
-file — the sidebar only *shows* links a role can use, but the routes
-themselves are the actual enforcement.
+Routes are guarded server-side in `server/middleware/authMiddleware.js` and
+the `server/routes/*.js` files — the sidebar only *shows* links a role can
+use, but the routes themselves are the actual enforcement.
 
-## How the core POS flow works
+---
 
-1. **Counter** (`/counter`): cashier picks items → cart total calculated
-   client-side (`public/js/counter.js`) → "Charge" POSTs to `/counter/charge`.
-2. **Order.create()** (`models/Order.js`) runs as a single MySQL transaction:
-   inserts the order + line items, deducts stock per line
-   (`Inventory.deductForSale`, row-locked with `FOR UPDATE` to prevent
-   double-selling the last item), logs every stock change to
-   `stock_movements`, and — if any item's stock drops to or below its
-   `min_level` — fires a low-stock alert into `notifications`.
-3. If any line can't be fulfilled (not enough stock), the **whole order is
-   rolled back** — nothing is partially saved.
-4. **Voiding an order** (`Order.voidOrder`) restores the stock it deducted
-   and writes an audit entry to `order_audit_log`, satisfying the paper's
-   change-order / audit-trail requirement.
-5. **Reports** (`/reports`) reads directly from `orders`/`order_items` for
-   the daily overview and per-branch top-seller breakdown.
+## Menu item images
+
+Food images are stored as static files in `server/public/menu-images/` and
+served from the **`/images/*`** URL path (for example `/images/Tapsilog.jpg`).
+
+On the **Menu Items** page, admin/managers can assign an image to each menu
+item by picking from the bundled thumbnails in the add/edit form, choosing
+**No Image**, or entering an external image URL. The selected image appears
+both in the Menu Items table and on the POS Counter cards.
+
+To add your own static image:
+
+1. Place the file (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`) in
+   `server/public/menu-images/`.
+2. Restart the server, then open a menu item's edit form — the new file will
+   appear in the image picker automatically.
+
+---
 
 ## A note on testing
 
-This was built and validated without a live MySQL server available in the
-build environment (no outbound network access there). Every model's SQL was
-exercised end-to-end — including the transactional order/stock-deduction
-logic, oversell rejection + rollback, and void/restore — against Node's
-built-in SQLite engine standing in for MySQL, using the exact same model
-code shipped here. The schema and queries use standard MySQL syntax
-throughout, so this should run against MySQL 5.7+/8.0 without changes.
-Still, run through the flows below once after your first `npm install` to
-confirm on your machine:
+During development the app uses an **embedded in-memory MongoDB** (via
+[`mongodb-memory-server`](https://github.com/nodkz/mongodb-memory-server)),
+which downloads a MongoDB binary on first use and runs it locally with
+transaction support. This keeps setup simple and lets the transactional
+order/stock logic run exactly like it would on a real server. Once seeded,
+data lives in memory for the lifetime of the process and is re-seeded on
+the next start.
 
-1. Log in as `cashier1`, ring up an order at the Counter, confirm the
-   receipt opens.
-2. Log in as `inventory1`, confirm that item's stock dropped.
-3. Log in as `admin`, check Reports → Daily Overview reflects the sale.
-4. Void the order from Orders → confirm stock is restored.
-
-## Known limitations / next steps
-
-- **GCash/Lalamove integration** is stubbed as a payment-method label only
-  (per the paper's own "Limitations" section, this depends on third-party
-  API availability outside the team's control) — wiring up real GCash
-  payment confirmation would replace the button in `counter/index.handlebars`.
-- **Mobile app:** the paper's stack (Flutter) is a separate native project;
-  this build is a responsive web app that works on phones/tablets in a
-  browser, which covers the "existing low-end devices" constraint from the
-  paper's limitations section without needing a native app build.
-- Session store is the default in-memory store — fine for a demo/defense,
-  but swap in `connect-mysql` or Redis before any real deployment so
-  logins survive a server restart.

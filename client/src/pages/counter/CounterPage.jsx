@@ -31,7 +31,7 @@ export const CounterPage = () => {
       setLoading(true);
       const [catRes, menuRes] = await Promise.all([
         api.get('/categories'),
-        api.get('/menu/pos-catalog', { branchId }),
+        api.get('/menu-items/pos-catalog', { branchId }),
       ]);
 
       if (catRes.success) setCategories(catRes.data);
@@ -295,6 +295,7 @@ export const CounterPage = () => {
           isOpen={showReceiptModal}
           onClose={() => setShowReceiptModal(false)}
           title="Order Completed!"
+          dismissable={false}
         >
           <div style={{ textAlign: 'center', marginBottom: '16px' }}>
             <CheckCircle2 size={48} color="#1f9d5c" style={{ margin: '0 auto 8px' }} />

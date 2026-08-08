@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -72,6 +73,9 @@ app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/reports', reportRoutes);
+
+// Serve bundled static menu images
+app.use('/images', express.static(path.join(__dirname, 'public/menu-images')));
 
 // Catch-all for undefined API routes
 app.all('/api/v1/*', (req, res, next) => {

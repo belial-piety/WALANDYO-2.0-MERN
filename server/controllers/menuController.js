@@ -1,9 +1,35 @@
+const fs = require('fs');
+const path = require('path');
 const MenuItem = require('../models/MenuItem');
 const Category = require('../models/Category');
 const Inventory = require('../models/Inventory');
 const inventoryService = require('../services/inventoryService');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
+
+const IMAGE_DIR = path.join(__dirname, '..', 'public', 'menu-images');
+
+exports.getMenuImages = asyncHandler(async (req, res, next) => {
+  let files = [];
+  try {
+    files = fs.readdirSync(IMAGE_DIR);
+  } catch (err) {
+    return next(new AppError('Unable to read menu images directory', 500));
+  }
+
+  const images = files
+    .filter((file) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file))
+    .map((file) => ({
+      filename: file,
+      url: `/images/${encodeURIComponent(file)}`,
+    }))
+    .sort((a, b) => a.filename.localeCompare(b.filename));
+
+  res.status(200).json({
+    success: true,
+    data: images,
+  });
+});
 
 exports.getMenuItems = asyncHandler(async (req, res, next) => {
   const { category, search, available } = req.query;

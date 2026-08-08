@@ -86,7 +86,11 @@ export const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-badge">W</div>
+        <img
+          className="brand-badge brand-logo"
+          src="/images/Walandyo%20Tapsilogan.jpg"
+          alt="Walandyo Tapsilogan"
+        />
         <div>
           <div className="brand-name">WALANDYO</div>
           <div className="brand-sub">TAPSILOGAN POS</div>

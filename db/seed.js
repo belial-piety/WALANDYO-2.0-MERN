@@ -14,7 +14,7 @@ const BRANCHES = [
   { name: 'Angono Food Truck', type: 'food_truck', address: 'Mobile - Angono area' },
 ];
 
-const CATEGORIES = ['Silog Meals', 'Pares & Bulalo', 'Beverages', 'Add-ons'];
+const CATEGORIES = ['Silog Meals', 'Pares & Bulalo', 'Beverages', 'Add-ons', 'Lutong Bahay'];
 
 // [name, category, price]
 const MENU_ITEMS = [
@@ -24,11 +24,20 @@ const MENU_ITEMS = [
   ['Bangsilog', 'Silog Meals', 99],
   ['Longsilog', 'Silog Meals', 79],
   ['Chicksilog', 'Silog Meals', 89],
+  ['Bacsilog', 'Silog Meals', 89],
+  ['Embosilog', 'Silog Meals', 99],
+  ['Hamsilog', 'Silog Meals', 89],
+  ['Tosilog', 'Silog Meals', 89],
   ['Beef Pares', 'Pares & Bulalo', 109],
+  ['Beef Mami', 'Pares & Bulalo', 99],
   ['Bulalo', 'Pares & Bulalo', 149],
+  ['Hungarian', 'Lutong Bahay', 79],
+  ['Liempo', 'Lutong Bahay', 129],
+  ['Shanghai', 'Lutong Bahay', 99],
+  ['Sisig', 'Lutong Bahay', 119],
   ['Bottled Water', 'Beverages', 20],
   ['Coke in Can', 'Beverages', 25],
-  ['Iced Tea', 'Beverages', 29,],
+  ['Iced Tea', 'Beverages', 29],
   ['Extra Rice', 'Add-ons', 20],
   ['Extra Egg', 'Add-ons', 15],
 ];

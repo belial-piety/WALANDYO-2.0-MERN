@@ -79,7 +79,7 @@ async function seed() {
   console.log(`[Seed] Seeded ${users.length} user accounts.`);
 
   // 3. Seed Categories
-  const categoryNames = ['Silog Meals', 'Pares & Bulalo', 'Beverages', 'Add-ons'];
+  const categoryNames = ['Silog Meals', 'Pares & Bulalo', 'Beverages', 'Add-ons', 'Lutong Bahay'];
   const categories = await Promise.all(
     categoryNames.map((name) => Category.create({ name }))
   );
@@ -88,21 +88,60 @@ async function seed() {
   const getCatId = (catName) => categories.find((c) => c.name === catName)._id;
 
   // 4. Seed Menu Items
-  const menuItemDocs = [
+  const menuImageMap = {
+    Tapsilog: '/images/Tapsilog.jpg',
+    Porksilog: '/images/Porkchop.jpg',
+    Hotsilog: '/images/Hakdog.jpg',
+    Bangsilog: null,
+    Longsilog: '/images/Longsilog.jpg',
+    Chicksilog: '/images/Chickensilog.jpg',
+    Bacsilog: '/images/Bacsilog.jpg',
+    Embosilog: '/images/Embosilog.jpg',
+    Hamsilog: '/images/Hamsilog.jpg',
+    Tosilog: '/images/Tosilog.jpg',
+    'Beef Pares': '/images/Pares Mami.jpg',
+    'Beef Mami': '/images/Beef Mami.jpg',
+    Bulalo: '/images/Bulalo.jpg',
+    Hungarian: '/images/Hungarian.jpg',
+    Liempo: '/images/Liempo.jpg',
+    Shanghai: '/images/shanghai.jpg',
+    Sisig: '/images/Sisig.jpg',
+    'Bottled Water': null,
+    'Coke in Can': null,
+    'Iced Tea': null,
+    'Extra Rice': null,
+    'Extra Egg': null,
+  };
+
+  const rawMenuItems = [
     { name: 'Tapsilog', category: getCatId('Silog Meals'), price: 99 },
     { name: 'Porksilog', category: getCatId('Silog Meals'), price: 89 },
     { name: 'Hotsilog', category: getCatId('Silog Meals'), price: 69 },
     { name: 'Bangsilog', category: getCatId('Silog Meals'), price: 99 },
     { name: 'Longsilog', category: getCatId('Silog Meals'), price: 79 },
     { name: 'Chicksilog', category: getCatId('Silog Meals'), price: 89 },
+    { name: 'Bacsilog', category: getCatId('Silog Meals'), price: 89 },
+    { name: 'Embosilog', category: getCatId('Silog Meals'), price: 99 },
+    { name: 'Hamsilog', category: getCatId('Silog Meals'), price: 89 },
+    { name: 'Tosilog', category: getCatId('Silog Meals'), price: 89 },
     { name: 'Beef Pares', category: getCatId('Pares & Bulalo'), price: 109 },
+    { name: 'Beef Mami', category: getCatId('Pares & Bulalo'), price: 99 },
     { name: 'Bulalo', category: getCatId('Pares & Bulalo'), price: 149 },
+    { name: 'Hungarian', category: getCatId('Lutong Bahay'), price: 79 },
+    { name: 'Liempo', category: getCatId('Lutong Bahay'), price: 129 },
+    { name: 'Shanghai', category: getCatId('Lutong Bahay'), price: 99 },
+    { name: 'Sisig', category: getCatId('Lutong Bahay'), price: 119 },
     { name: 'Bottled Water', category: getCatId('Beverages'), price: 20 },
     { name: 'Coke in Can', category: getCatId('Beverages'), price: 25 },
     { name: 'Iced Tea', category: getCatId('Beverages'), price: 29 },
     { name: 'Extra Rice', category: getCatId('Add-ons'), price: 20 },
     { name: 'Extra Egg', category: getCatId('Add-ons'), price: 15 },
   ];
+
+  const menuItemDocs = rawMenuItems.map((item) => ({
+    ...item,
+    imageUrl: menuImageMap[item.name] || null,
+  }));
 
   const menuItems = await MenuItem.insertMany(menuItemDocs);
   console.log(`[Seed] Seeded ${menuItems.length} menu items.`);

@@ -35,7 +35,11 @@ export const LoginPage = () => {
   return (
     <div className="login-body">
       <div className="login-card">
-        <div className="brand-badge large">W</div>
+        <img
+          className="brand-badge large brand-logo"
+          src="/images/Walandyo%20Tapsilogan.jpg"
+          alt="Walandyo Tapsilogan"
+        />
         <h1 className="login-title">WALANDYO TAPSILOGAN</h1>
         <p className="login-tagline">Integrated Point-of-Sale System</p>
 
