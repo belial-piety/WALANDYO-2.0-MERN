@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import getDefaultRoute from '../../utils/roleRoutes';
 
 export const LoginPage = () => {
   const { login } = useAuth();
@@ -23,7 +24,7 @@ export const LoginPage = () => {
       setError('');
       const res = await login(username, password);
       if (res.success) {
-        navigate('/counter');
+        navigate(getDefaultRoute(res.data.user.role));
       }
     } catch (err) {
       setError(err.message || 'Incorrect username or password.');
@@ -81,12 +82,37 @@ export const LoginPage = () => {
           </button>
         </form>
 
-        <div className="login-hint">
-          <strong>Demo Accounts:</strong><br />
-          Admin: <code>admin</code> / <code>admin123</code><br />
-          Manager: <code>manager1</code> / <code>manager123</code><br />
-          Cashier: <code>cashier1</code> / <code>cashier123</code><br />
-          Inventory: <code>inventory1</code> / <code>inventory123</code>
+        <div className="login-hint" style={{ textAlign: 'left' }}>
+          <strong>Demo Accounts</strong>
+          <div style={{ marginTop: '6px', fontSize: '12px', lineHeight: '1.7' }}>
+            <div>
+              <strong style={{ color: '#cf1f21' }}>Admin</strong> (all branches):{' '}
+              <code>admin</code> / <code>admin123</code>
+            </div>
+            <div style={{ marginTop: '6px' }}>
+              <strong>Passwords by role:</strong> Manager = <code>manager123</code> · Cashier ={' '}
+              <code>cashier123</code> · Inventory = <code>inventory123</code>
+            </div>
+            <div style={{ marginTop: '6px' }}>
+              <strong>Branch usernames:</strong>
+              <div style={{ marginTop: '2px' }}>
+                Marikina (Main): <code>manager_marikina</code>, <code>cashier_marikina</code>,{' '}
+                <code>inventory_marikina</code>
+                <br />
+                Angono: <code>manager_angono</code>, <code>cashier_angono</code>,{' '}
+                <code>inventory_angono</code>
+                <br />
+                Mayamot, Antipolo: <code>manager_mayamot</code>, <code>cashier_mayamot</code>,{' '}
+                <code>inventory_mayamot</code>
+                <br />
+                Penafrancia, Antipolo: <code>manager_penafrancia</code>,{' '}
+                <code>cashier_penafrancia</code>, <code>inventory_penafrancia</code>
+                <br />
+                Angono Food Truck: <code>manager_angono_food_truck</code>,{' '}
+                <code>cashier_angono_food_truck</code>, <code>inventory_angono_food_truck</code>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -94,3 +120,4 @@ export const LoginPage = () => {
 };
 
 export default LoginPage;
+

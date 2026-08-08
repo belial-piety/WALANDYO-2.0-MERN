@@ -37,7 +37,7 @@ async function seed() {
     { name: 'Mayamot, Antipolo', type: 'branch', address: 'Mayamot, Antipolo City' },
     { name: 'Penafrancia, Antipolo', type: 'branch', address: 'Penafrancia, Antipolo City' },
     { name: 'Angono Food Truck', type: 'food_truck', address: 'Mobile - Angono area' },
-  ];
+];
   const branches = await Branch.insertMany(branchDocs);
   console.log(`[Seed] Seeded ${branches.length} branches.`);
 
@@ -45,7 +45,16 @@ async function seed() {
 
   // 2. Seed Users
   const salt = await bcrypt.genSalt(10);
-  const userDocs = [
+
+const branchSlugs = {
+    'Marikina (Main)': 'marikina',
+    'Angono': 'angono',
+    'Mayamot, Antipolo': 'mayamot',
+    'Penafrancia, Antipolo': 'penafrancia',
+    'Angono Food Truck': 'angono_food_truck',
+  };
+
+const userDocs = [
     {
       fullName: 'Marjorie Comia',
       username: 'admin',
@@ -53,28 +62,52 @@ async function seed() {
       role: 'admin',
       branch: null,
     },
-    {
-      fullName: 'Vicky Barberona',
-      username: 'manager1',
-      passwordHash: await bcrypt.hash('manager123', salt),
-      role: 'manager',
-      branch: marikinaBranch._id,
-    },
-    {
-      fullName: 'Nicole (Marikina)',
-      username: 'cashier1',
-      passwordHash: await bcrypt.hash('cashier123', salt),
-      role: 'cashier',
-      branch: marikinaBranch._id,
-    },
-    {
-      fullName: 'Marga Brillantes',
-      username: 'inventory1',
-      passwordHash: await bcrypt.hash('inventory123', salt),
-      role: 'inventory',
-      branch: marikinaBranch._id,
-    },
   ];
+
+  // Create Manager, Cashier, and Inventory demo accounts for every branch.
+  const branchRoleNames = {
+    manager: {
+      Marikina: 'Vicky Barberona',
+      Angono: 'Angono Manager',
+      Mayamot: 'Mayamot Manager',
+      Penafrancia: 'Penafrancia Manager',
+      'Angono Food Truck': 'Food Truck Manager',
+    },
+    cashier: {
+      Marikina: 'Nicole (Marikina)',
+      Angono: 'Angono Cashier',
+      Mayamot: 'Mayamot Cashier',
+      Penafrancia: 'Penafrancia Cashier',
+      'Angono Food Truck': 'Food Truck Cashier',
+    },
+    inventory: {
+      Marikina: 'Marga Brillantes',
+      Angono: 'Angono Inventory',
+      Mayamot: 'Mayamot Inventory',
+      Penafrancia: 'Penafrancia Inventory',
+      'Angono Food Truck': 'Food Truck Inventory',
+    },
+  };
+
+  const rolePasswords = {
+    manager: 'manager123',
+    cashier: 'cashier123',
+    inventory: 'inventory123',
+  };
+
+  for (const branch of branches) {
+    for (const role of ['manager', 'cashier', 'inventory']) {
+const slug = branchSlugs[branch.name];
+      userDocs.push({
+        fullName: branchRoleNames[role][branch.name] || `${role} (${branch.name})`,
+        username: `${role}_${slug}`,
+        passwordHash: await bcrypt.hash(rolePasswords[role], salt),
+        role,
+        branch: branch._id,
+      });
+    }
+  }
+
   const users = await User.insertMany(userDocs);
   console.log(`[Seed] Seeded ${users.length} user accounts.`);
 
@@ -160,11 +193,11 @@ async function seed() {
       });
     }
   }
-  const inventories = await Inventory.insertMany(inventoryDocs);
+const inventories = await Inventory.insertMany(inventoryDocs);
   console.log(`[Seed] Seeded ${inventories.length} inventory records.`);
 
   // 6. Create a sample initial completed order for testing
-  const cashier = users.find((u) => u.username === 'cashier1');
+  const cashier = users.find((u) => u.username === 'cashier_marikina');
   const tapsilog = menuItems.find((i) => i.name === 'Tapsilog');
   const icedTea = menuItems.find((i) => i.name === 'Iced Tea');
 

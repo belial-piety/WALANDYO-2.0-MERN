@@ -7,7 +7,7 @@ router.use(protect);
 
 router.get('/', restrictTo('admin', 'manager', 'inventory'), restrictBranch, inventoryController.getInventory);
 router.get('/:id', restrictTo('admin', 'manager', 'inventory'), inventoryController.getInventoryById);
-router.post('/:id/restock', restrictTo('admin', 'inventory'), inventoryController.restockItem);
+router.post('/:id/restock', restrictTo('admin', 'manager', 'inventory'), inventoryController.restockItem);
 router.patch('/:id/min-level', restrictTo('admin', 'manager', 'inventory'), inventoryController.updateMinLevel);
 router.get('/:id/movements', restrictTo('admin', 'manager', 'inventory'), inventoryController.getStockMovements);
 

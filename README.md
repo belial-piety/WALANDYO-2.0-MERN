@@ -94,7 +94,7 @@ Use one of these demo accounts to explore (full list under **Demo logins**):
 | Role | Username | Password |
 |---|---|---|
 | Owner/Admin (sees everything) | `admin` | `admin123` |
-| Cashier (rings up orders) | `cashier1` | `cashier123` |
+| Cashier (rings up orders) | `cashier_marikina` | `cashier123` |
 
 When you're done, close the browser tab any time. To stop the app, click into
 the terminal window and press **Ctrl+C**. To run it again later, just repeat
@@ -149,12 +149,33 @@ Once logged in, here's what each part of the sidebar does.
 
 ## Demo logins
 
-| Role | Username | Password | Scope |
+Each branch has its own **Manager**, **Cashier**, and **Inventory Clerk** account.
+Passwords are the same for every branch of a given role:
+
+| Role | Password |
+|---|---|
+| Owner/Admin | `admin` / `admin123` (all branches) |
+| Branch Manager | `manager123` |
+| Cashier | `cashier123` |
+| Inventory Clerk | `inventory123` |
+
+**Branch usernames** (use the role password above with each username):
+
+| Branch | Manager | Cashier | Inventory Clerk |
 |---|---|---|---|
-| Owner/Admin | `admin` | `admin123` | Everything, all branches |
-| Branch Manager | `manager1` | `manager123` | Marikina branch only |
-| Cashier | `cashier1` | `cashier123` | Marikina branch only |
-| Inventory Clerk | `inventory1` | `inventory123` | Marikina branch only |
+| Marikina (Main) | `manager_marikina` | `cashier_marikina` | `inventory_marikina` |
+| Angono | `manager_angono` | `cashier_angono` | `inventory_angono` |
+| Mayamot, Antipolo | `manager_mayamot` | `cashier_mayamot` | `inventory_mayamot` |
+| Penafrancia, Antipolo | `manager_penafrancia` | `cashier_penafrancia` | `inventory_penafrancia` |
+| Angono Food Truck | `manager_angono_food_truck` | `cashier_angono_food_truck` | `inventory_angono_food_truck` |
+
+**Default landing page after login is role-based:**
+
+| Role | Lands on |
+|---|---|
+| Admin / Branch Manager | Reports |
+| Inventory Clerk | Inventory |
+| Cashier | POS Counter |
 
 (Passwords are bcrypt-hashed in the database — never stored in plaintext.)
 

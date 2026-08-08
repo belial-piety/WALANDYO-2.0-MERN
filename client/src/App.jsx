@@ -18,6 +18,13 @@ import StaffPage from './pages/staff/StaffPage';
 import NotificationsPage from './pages/notifications/NotificationsPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
+import getDefaultRoute from './utils/roleRoutes';
+import { useAuth } from './contexts/AuthContext';
+
+const HomeRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={getDefaultRoute(user?.role)} replace />;
+};
 
 export const App = () => {
   return (
@@ -30,7 +37,7 @@ export const App = () => {
           {/* Protected Routes inside App Shell */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Navigate to="/counter" replace />} />
+              <Route path="/" element={<HomeRedirect />} />
 
               {/* POS Counter: Admin, Manager, Cashier */}
               <Route element={<RoleRoute allowedRoles={['admin', 'manager', 'cashier']} />}>
