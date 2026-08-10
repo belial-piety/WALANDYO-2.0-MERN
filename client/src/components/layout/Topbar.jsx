@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../api/axiosClient';
 import { Building2, Bell } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 
 export const Topbar = () => {
@@ -10,6 +10,8 @@ export const Topbar = () => {
   const { unreadCount } = useNotifications();
   const [branches, setBranches] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const hideAdminBranchSelector = user?.role === 'admin' && location.pathname === '/orders';
 
   useEffect(() => {
     if (user && user.role === 'admin') {
@@ -35,24 +37,28 @@ export const Topbar = () => {
   return (
     <header className="topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Building2 size={18} color="#8a8578" />
-        {user?.role === 'admin' ? (
-          <select
-            className="field-select"
-            style={{ padding: '6px 12px', fontSize: '13px', width: 'auto', fontWeight: 600 }}
-            value={selectedBranch ? selectedBranch._id : ''}
-            onChange={handleBranchChange}
-          >
-            {branches.map((b) => (
-              <option key={b._id} value={b._id}>
-                {b.name} ({b.type === 'food_truck' ? 'Food Truck' : 'Branch'})
-              </option>
-            ))}
-          </select>
-        ) : (
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#2a2621' }}>
-            {selectedBranch ? selectedBranch.name : 'Main Branch'}
-          </span>
+        {!hideAdminBranchSelector && (
+          <>
+            <Building2 size={18} color="#8a8578" />
+            {user?.role === 'admin' ? (
+              <select
+                className="field-select"
+                style={{ padding: '6px 12px', fontSize: '13px', width: 'auto', fontWeight: 600 }}
+                value={selectedBranch ? selectedBranch._id : ''}
+                onChange={handleBranchChange}
+              >
+                {branches.map((b) => (
+                  <option key={b._id} value={b._id}>
+                    {b.name} ({b.type === 'food_truck' ? 'Food Truck' : 'Branch'})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#2a2621' }}>
+                {selectedBranch ? selectedBranch.name : 'Main Branch'}
+              </span>
+            )}
+          </>
         )}
       </div>
 

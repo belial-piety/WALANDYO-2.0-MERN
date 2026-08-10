@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../api/axiosClient';
-import { Plus, Edit2, Archive, Search } from 'lucide-react';
+import { Plus, Edit2, Archive, Search, Upload } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 
 export const MenuPage = () => {
@@ -24,6 +24,7 @@ export const MenuPage = () => {
   });
   const [modalError, setModalError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -82,6 +83,47 @@ export const MenuPage = () => {
     });
     setModalError('');
     setShowModal(true);
+  };
+
+  const handleLocalImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setModalError('Please upload a JPG, PNG, WEBP, or GIF image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setModalError('Image size cannot exceed 5 MB.');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setModalError('');
+      const data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Unable to read the selected image.'));
+        reader.readAsDataURL(file);
+      });
+
+      const res = await api.post('/menu-items/upload-image', {
+        fileName: file.name,
+        mimeType: file.type,
+        data,
+      });
+
+      if (res.success) {
+        setFormData((current) => ({ ...current, imageUrl: res.data.url }));
+      }
+    } catch (err) {
+      setModalError(err.message || 'Failed to upload image.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -319,6 +361,21 @@ export const MenuPage = () => {
             />
 
             <label className="field-label">Product Image</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <label className="btn btn-secondary" style={{ cursor: uploadingImage ? 'wait' : 'pointer' }}>
+                <Upload size={14} /> {uploadingImage ? 'Uploading...' : 'Upload from Computer'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleLocalImageUpload}
+                  disabled={uploadingImage}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <span className="field-hint" style={{ margin: 0 }}>
+                JPG, PNG, WEBP, or GIF · max 5 MB
+              </span>
+            </div>
             <div
               style={{
                 display: 'grid',
@@ -397,7 +454,7 @@ export const MenuPage = () => {
             <input
               type="url"
               className="field-input"
-              value={formData.imageUrl && !staticImages.some((i) => i.url === formData.imageUrl) ? formData.imageUrl : ''}
+              value={/^https?:\/\//i.test(formData.imageUrl) ? formData.imageUrl : ''}
               onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
               placeholder="https://..."
             />
@@ -425,9 +482,9 @@ export const MenuPage = () => {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={submitting}
+                disabled={submitting || uploadingImage}
               >
-                {submitting ? 'Saving...' : editingItem ? 'Update Item' : 'Create Item'}
+                {submitting ? 'Saving...' : uploadingImage ? 'Uploading Image...' : editingItem ? 'Update Item' : 'Create Item'}
               </button>
             </div>
           </form>

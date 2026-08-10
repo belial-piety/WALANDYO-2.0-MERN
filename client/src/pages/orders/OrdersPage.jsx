@@ -1,16 +1,36 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../api/axiosClient';
-import { Search, Eye, AlertOctagon, Printer } from 'lucide-react';
+import { Search, Eye, AlertOctagon, Printer, RefreshCw, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 
 export const OrdersPage = () => {
   const { user, selectedBranch } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 25;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [branches, setBranches] = useState([]);
+  const [adminBranchFilter, setAdminBranchFilter] = useState('all');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [draftFilters, setDraftFilters] = useState({
+    branchId: 'all',
+    status: '',
+    paymentMethod: '',
+    dateFrom: '',
+    dateTo: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  });
 
   // Selected Order for Receipt Modal
   const [viewOrder, setViewOrder] = useState(null);
@@ -21,7 +41,7 @@ export const OrdersPage = () => {
   const [voidError, setVoidError] = useState('');
   const [voidSubmitting, setVoidSubmitting] = useState(false);
 
-  const branchId = selectedBranch ? selectedBranch._id || selectedBranch : null;
+  const isAdmin = user?.role === 'admin';
 
   const loadOrders = useCallback(async () => {
     try {
@@ -30,23 +50,118 @@ export const OrdersPage = () => {
         search,
         status: statusFilter,
         paymentMethod: paymentFilter,
+        dateFrom,
+        dateTo,
+        sortBy,
+        sortOrder,
+        page,
+        limit: pageSize,
       };
-      if (branchId) params.branchId = branchId;
+      // Non-admin users are branch-locked by the backend. Admins default to all branches
+      // and can optionally narrow Order History using the page-specific branch filter.
+      if (isAdmin && adminBranchFilter !== 'all') {
+        params.branchId = adminBranchFilter;
+      }
 
       const res = await api.get('/orders', params);
       if (res.success) {
         setOrders(res.data);
+        setTotalCount(res.meta?.totalCount || 0);
+        setTotalPages(Math.max(res.meta?.totalPages || 1, 1));
+
+        // If a filter change or deletion leaves us beyond the last page,
+        // move back to the final valid page and reload.
+        if ((res.meta?.totalPages || 0) > 0 && page > res.meta.totalPages) {
+          setPage(res.meta.totalPages);
+        }
       }
     } catch (err) {
       console.error('Failed to load orders', err);
     } finally {
       setLoading(false);
     }
-  }, [branchId, search, statusFilter, paymentFilter]);
+  }, [isAdmin, adminBranchFilter, search, statusFilter, paymentFilter, dateFrom, dateTo, sortBy, sortOrder, page]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    api.get('/branches').then((res) => {
+      if (res.success) setBranches(res.data.filter((b) => b.isActive));
+    }).catch((err) => console.error('Failed to load branches', err));
+  }, [isAdmin]);
 
   useEffect(() => {
     loadOrders();
+
+    const handleFocus = () => loadOrders();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') loadOrders();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [loadOrders]);
+
+  const openFilterModal = () => {
+    setDraftFilters({
+      branchId: adminBranchFilter,
+      status: statusFilter,
+      paymentMethod: paymentFilter,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortOrder,
+    });
+    setShowFilterModal(true);
+  };
+
+  const applyFilters = (e) => {
+    e.preventDefault();
+    setAdminBranchFilter(draftFilters.branchId || 'all');
+    setStatusFilter(draftFilters.status);
+    setPaymentFilter(draftFilters.paymentMethod);
+    setDateFrom(draftFilters.dateFrom);
+    setDateTo(draftFilters.dateTo);
+    setSortBy(draftFilters.sortBy);
+    setSortOrder(draftFilters.sortOrder);
+    setPage(1);
+    setShowFilterModal(false);
+  };
+
+  const clearFilters = () => {
+    const cleared = {
+      branchId: 'all',
+      status: '',
+      paymentMethod: '',
+      dateFrom: '',
+      dateTo: '',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    };
+    setDraftFilters(cleared);
+    setAdminBranchFilter('all');
+    setStatusFilter('');
+    setPaymentFilter('');
+    setDateFrom('');
+    setDateTo('');
+    setSortBy('createdAt');
+    setSortOrder('desc');
+    setPage(1);
+    setShowFilterModal(false);
+  };
+
+  const activeFilterCount = [
+    isAdmin && adminBranchFilter !== 'all' ? adminBranchFilter : '',
+    statusFilter,
+    paymentFilter,
+    dateFrom,
+    dateTo,
+    sortBy !== 'createdAt' || sortOrder !== 'desc' ? `${sortBy}-${sortOrder}` : '',
+  ].filter(Boolean).length;
 
   const handleVoidOrder = async (e) => {
     e.preventDefault();
@@ -74,6 +189,9 @@ export const OrdersPage = () => {
     }
   };
 
+  const firstItemIndex = totalCount === 0 ? 0 : ((page - 1) * pageSize) + 1;
+  const lastItemIndex = totalCount === 0 ? 0 : Math.min(page * pageSize, totalCount);
+
   const handleReprint = async (orderId) => {
     try {
       await api.post(`/orders/${orderId}/reprint`);
@@ -88,44 +206,43 @@ export const OrdersPage = () => {
       <div className="page-header">
         <div>
           <h1>Order History</h1>
-          <p className="page-sub">View, inspect, reprint receipts, or void completed orders.</p>
+          <p className="page-sub">
+            {isAdmin
+              ? 'View orders across all branches, or filter to one branch.'
+              : `Orders for ${selectedBranch?.name || user?.branch?.name || 'your assigned branch'}.`}
+          </p>
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* Search + Filter Controls */}
       <div className="card" style={{ padding: '14px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-        <div className="search-box" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
+        <div className="search-box" style={{ flex: 1, minWidth: '220px', marginBottom: 0 }}>
           <Search size={16} className="search-icon" />
           <input
             type="text"
             placeholder="Search Order # or Cashier..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
 
-        <select
-          className="field-select"
-          style={{ width: 'auto' }}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">All Statuses</option>
-          <option value="completed">Completed</option>
-          <option value="voided">Voided</option>
-        </select>
+        <button type="button" className="btn btn-secondary" onClick={openFilterModal}>
+          <SlidersHorizontal size={14} />
+          Filter & Sort{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+        </button>
 
-        <select
-          className="field-select"
-          style={{ width: 'auto' }}
-          value={paymentFilter}
-          onChange={(e) => setPaymentFilter(e.target.value)}
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={loadOrders}
+          disabled={loading}
+          title="Refresh order history"
         >
-          <option value="">All Payments</option>
-          <option value="cash">Cash</option>
-          <option value="gcash">GCash</option>
-          <option value="card">Card</option>
-        </select>
+          <RefreshCw size={14} /> {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       {/* Orders Table */}
@@ -202,9 +319,170 @@ export const OrdersPage = () => {
             </tbody>
           </table>
         )}
+
+        {!loading && totalCount > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              padding: '12px 14px',
+              borderTop: '1px solid #eee8df',
+              background: '#fff',
+            }}
+          >
+            <span style={{ fontSize: '13px', color: '#6f6a61', minWidth: '120px', textAlign: 'right' }}>
+              {firstItemIndex.toLocaleString()}–{lastItemIndex.toLocaleString()} of {totalCount.toLocaleString()}
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ padding: '6px 9px' }}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={page <= 1}
+              title="Previous page"
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ padding: '6px 9px' }}
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              disabled={page >= totalPages}
+              title="Next page"
+              aria-label="Next page"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* View Receipt Modal */}
+      {/* Filter & Sort Modal */}
+      {showFilterModal && (
+        <Modal
+          isOpen={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+          title="Filter & Sort Orders"
+          subtitle="Choose any combination of filters. Leave a field blank to include all values."
+          boxStyle={{ width: '620px', maxWidth: '94vw' }}
+        >
+          <form onSubmit={applyFilters}>
+            {isAdmin && (
+              <>
+                <label className="field-label">Branch</label>
+                <select
+                  className="field-select"
+                  value={draftFilters.branchId}
+                  onChange={(e) => setDraftFilters({ ...draftFilters, branchId: e.target.value })}
+                >
+                  <option value="all">All Branches</option>
+                  {branches.map((branch) => (
+                    <option key={branch._id} value={branch._id}>{branch.name}</option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label className="field-label">Payment Type</label>
+                <select
+                  className="field-select"
+                  value={draftFilters.paymentMethod}
+                  onChange={(e) => setDraftFilters({ ...draftFilters, paymentMethod: e.target.value })}
+                >
+                  <option value="">All Payments</option>
+                  <option value="cash">Cash</option>
+                  <option value="gcash">GCash</option>
+                  <option value="card">Card</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="field-label">Status</label>
+                <select
+                  className="field-select"
+                  value={draftFilters.status}
+                  onChange={(e) => setDraftFilters({ ...draftFilters, status: e.target.value })}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="completed">Completed</option>
+                  <option value="voided">Voided</option>
+                </select>
+              </div>
+            </div>
+
+            <label className="field-label">Time Frame</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <span className="field-hint">From</span>
+                <input
+                  type="datetime-local"
+                  className="field-input"
+                  style={{ width: '100%', minWidth: 0 }}
+                  value={draftFilters.dateFrom}
+                  onChange={(e) => setDraftFilters({ ...draftFilters, dateFrom: e.target.value })}
+                />
+              </div>
+              <div>
+                <span className="field-hint">To</span>
+                <input
+                  type="datetime-local"
+                  className="field-input"
+                  style={{ width: '100%', minWidth: 0 }}
+                  value={draftFilters.dateTo}
+                  min={draftFilters.dateFrom || undefined}
+                  onChange={(e) => setDraftFilters({ ...draftFilters, dateTo: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <label className="field-label">Sort By</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+              <select
+                className="field-select"
+                value={draftFilters.sortBy}
+                onChange={(e) => setDraftFilters({ ...draftFilters, sortBy: e.target.value })}
+              >
+                <option value="createdAt">Date & Time</option>
+                <option value="orderNumber">Order Number</option>
+                <option value="cashier">Cashier Name (Alphabetical)</option>
+                <option value="total">Total Amount</option>
+                <option value="paymentMethod">Payment Type (Alphabetical)</option>
+                <option value="status">Status (Alphabetical)</option>
+              </select>
+              <select
+                className="field-select"
+                value={draftFilters.sortOrder}
+                onChange={(e) => setDraftFilters({ ...draftFilters, sortOrder: e.target.value })}
+              >
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div>
+
+            <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+              <button type="button" className="btn btn-ghost" onClick={clearFilters}>
+                Clear Filters
+              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowFilterModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </form>
+        </Modal>
+      )}
+
       {viewOrder && (
         <Modal
           isOpen={Boolean(viewOrder)}

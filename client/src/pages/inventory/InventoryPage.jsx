@@ -54,18 +54,27 @@ export const InventoryPage = () => {
     loadInventory();
   }, [loadInventory]);
 
-  const handleRestock = async (e) => {
-    e.preventDefault();
-    if (!restockQty || Number(restockQty) <= 0) {
-      setRestockError('Please enter a valid positive quantity.');
+  const handleStockAdjustment = async (mode) => {
+    const quantity = Number(restockQty);
+
+    if (!restockQty || quantity < 1 || !Number.isInteger(quantity)) {
+      setRestockError('Quantity must be a whole number of at least 1.');
+      return;
+    }
+
+    if (mode === 'deduct' && quantity > restockItem.currentStock) {
+      setRestockError(
+        `Cannot deduct more than the current stock (${restockItem.currentStock} ${restockItem.unit}).`
+      );
       return;
     }
 
     try {
       setRestockSubmitting(true);
       setRestockError('');
-      const res = await api.post(`/inventory/${restockItem._id}/restock`, {
-        quantity: Number(restockQty),
+      const endpoint = mode === 'deduct' ? 'deduct' : 'restock';
+      const res = await api.post(`/inventory/${restockItem._id}/${endpoint}`, {
+        quantity,
         notes: restockNotes.trim(),
       });
 
@@ -76,7 +85,9 @@ export const InventoryPage = () => {
         await loadInventory();
       }
     } catch (err) {
-      setRestockError(err.message || 'Restock failed.');
+      setRestockError(
+        err.message || (mode === 'deduct' ? 'Stock deduction failed.' : 'Stock addition failed.')
+      );
     } finally {
       setRestockSubmitting(false);
     }
@@ -271,16 +282,16 @@ export const InventoryPage = () => {
         <Modal
           isOpen={Boolean(restockItem)}
           onClose={() => setRestockItem(null)}
-          title={`Restock: ${restockItem.menuItem?.name}`}
+          title={`Adjust Stock: ${restockItem.menuItem?.name}`}
         >
           {restockError && <div className="alert alert-error">{restockError}</div>}
 
-          <form onSubmit={handleRestock}>
+          <form onSubmit={(e) => { e.preventDefault(); handleStockAdjustment('add'); }}>
             <p style={{ fontSize: '13px', color: '#8a8578', marginBottom: '12px' }}>
               Current stock: <strong>{restockItem.currentStock} {restockItem.unit}</strong>
             </p>
 
-            <label className="field-label">Quantity to Add *</label>
+            <label className="field-label">Quantity *</label>
             <input
               type="number"
               min="1"
@@ -288,17 +299,18 @@ export const InventoryPage = () => {
               value={restockQty}
               onChange={(e) => setRestockQty(e.target.value)}
               placeholder="e.g. 50"
+              step="1"
               required
               autoFocus
             />
 
-            <label className="field-label">Notes / Supplier (Optional)</label>
+            <label className="field-label">Notes / Reason (Optional)</label>
             <input
               type="text"
               className="field-input"
               value={restockNotes}
               onChange={(e) => setRestockNotes(e.target.value)}
-              placeholder="e.g. Weekly delivery from main kitchen"
+              placeholder="e.g. Weekly delivery or spoilage"
             />
 
             <div className="modal-footer">
@@ -310,11 +322,19 @@ export const InventoryPage = () => {
                 Cancel
               </button>
               <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={restockSubmitting || restockItem.currentStock <= 0}
+                onClick={() => handleStockAdjustment('deduct')}
+              >
+                {restockSubmitting ? 'Saving...' : 'Deduct'}
+              </button>
+              <button
                 type="submit"
                 className="btn btn-primary"
                 disabled={restockSubmitting}
               >
-                {restockSubmitting ? 'Saving...' : 'Add Stock'}
+                {restockSubmitting ? 'Saving...' : 'Add'}
               </button>
             </div>
           </form>

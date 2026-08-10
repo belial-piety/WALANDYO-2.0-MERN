@@ -212,19 +212,18 @@ Key variables (without a value, the app uses sensible defaults):
 | Variable | Purpose | Default |
 |---|---|---|
 | `PORT` | Port the server listens on | `3000` |
-| `MONGODB_URI` | Connection string for your own MongoDB | `embedded` (in-memory) |
+| `MONGODB_URI` | MongoDB connection string | local persistent `rs0` replica set |
 | `NODE_ENV` | `development` or `production` | `development` |
 
 ### Custom MongoDB server
 
-If you want to use a real/remote MongoDB instead of the in-memory one, set
-`MONGODB_URI` in `.env`, e.g.:
+For persistent local development with transactions enabled, use:
 
 ```
-MONGODB_URI=mongodb://127.0.0.1:27017/walandyo_pos
+MONGODB_URI=mongodb://127.0.0.1:27017/walandyo_pos?replicaSet=rs0&directConnection=true
 ```
 
-Then run `npm start` as usual. The app will connect to that database instead.
+The in-memory database is now opt-in only. Use `MONGODB_URI=embedded` only for disposable test data because it is deleted when the application stops.
 
 ### Re-seeding demo data
 

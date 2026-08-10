@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const Modal = ({ isOpen, onClose, title, subtitle, children, dismissable = true }) => {
+export const Modal = ({ isOpen, onClose, title, subtitle, children, dismissable = true, boxStyle }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen && dismissable) {
@@ -16,7 +16,7 @@ export const Modal = ({ isOpen, onClose, title, subtitle, children, dismissable 
   return (
     <div className="modal">
       <div className="modal-backdrop" onClick={dismissable ? onClose : undefined} />
-      <div className="modal-box">
+      <div className="modal-box" style={boxStyle}>
         <div className="modal-header">
           <h2>{title}</h2>
           {dismissable && (
