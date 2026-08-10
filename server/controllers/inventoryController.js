@@ -73,6 +73,21 @@ exports.restockItem = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.deductItem = asyncHandler(async (req, res, next) => {
+  const { quantity, notes } = req.body;
+  const inv = await inventoryService.deductInventory(
+    req.params.id,
+    quantity,
+    req.user._id,
+    notes
+  );
+
+  res.status(200).json({
+    success: true,
+    data: inv,
+  });
+});
+
 exports.updateMinLevel = asyncHandler(async (req, res, next) => {
   const { minLevel } = req.body;
   const inv = await inventoryService.updateMinLevel(req.params.id, minLevel);

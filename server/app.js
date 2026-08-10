@@ -46,8 +46,8 @@ const loginLimiter = rateLimit({
 app.use('/api/v1/auth/login', loginLimiter);
 
 // Body and Cookie parsers
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '8mb' }));
+app.use(express.urlencoded({ extended: true, limit: '8mb' }));
 app.use(cookieParser());
 
 // Sanitize against NoSQL Query Injection
@@ -76,6 +76,7 @@ app.use('/api/v1/reports', reportRoutes);
 
 // Serve bundled static menu images
 app.use('/images', express.static(path.join(__dirname, 'public/menu-images')));
+app.use('/uploads/menu-images', express.static(path.join(__dirname, 'public/menu-uploads')));
 
 // Catch-all for undefined API routes
 app.all('/api/v1/*', (req, res, next) => {

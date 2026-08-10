@@ -62,21 +62,27 @@ class InventoryService {
           : `${itemName} is running low (${inventoryDoc.currentStock} left, min ${inventoryDoc.minLevel}).`;
 
       try {
-        await Notification.create(
-          [
-            {
-              branch: branchId,
-              inventory: inventoryDoc._id,
+        // Keep a single unread alert per inventory item, but refresh it to reflect
+        // the latest stock level/type (for example LOW STOCK -> OUT OF STOCK).
+        await Notification.findOneAndUpdate(
+          { branch: branchId, inventory: inventoryDoc._id, isRead: false },
+          {
+            $set: {
               menuItem: inventoryDoc.menuItem,
               message,
               type,
+            },
+            $setOnInsert: {
+              branch: branchId,
+              inventory: inventoryDoc._id,
               isRead: false,
             },
-          ],
-          { session }
+          },
+          { upsert: true, new: true, session, setDefaultsOnInsert: true }
         );
       } catch (err) {
-        // Code 11000 means an unread notification already exists for this inventory item
+        // A concurrent stock update can race the unique unread-alert index.
+        // In that rare case, the other operation has already created/refreshed it.
         if (err.code !== 11000) {
           console.error('Notification creation error:', err);
         }
@@ -126,6 +132,65 @@ class InventoryService {
             { session }
           );
         }
+
+        updatedInventory = inv;
+      });
+    } finally {
+      session.endSession();
+    }
+
+    return updatedInventory;
+  }
+
+  /**
+   * Deducts stock for spoilage, damage, wastage, or other manual adjustments.
+   */
+  async deductInventory(inventoryId, quantity, userId, notes = '') {
+    const qty = Number(quantity);
+    if (!quantity || qty <= 0 || !Number.isInteger(qty)) {
+      throw new AppError('Deduction quantity must be a positive integer', 400);
+    }
+
+    const session = await mongoose.startSession();
+    let updatedInventory;
+
+    try {
+      await session.withTransaction(async () => {
+        const inv = await Inventory.findById(inventoryId).populate('menuItem').session(session);
+        if (!inv) throw new AppError('Inventory record not found', 404);
+
+        if (qty > inv.currentStock) {
+          throw new AppError(
+            `Deduction quantity cannot exceed current stock (${inv.currentStock} ${inv.unit})`,
+            400
+          );
+        }
+
+        inv.currentStock -= qty;
+        await inv.save({ session });
+
+        await StockMovement.create(
+          [
+            {
+              inventory: inv._id,
+              branch: inv.branch,
+              menuItem: inv.menuItem._id,
+              changeQty: -qty,
+              type: 'adjustment',
+              createdBy: userId,
+              notes: notes || 'Manual stock deduction',
+            },
+          ],
+          { session }
+        );
+
+        const itemName = inv.menuItem ? inv.menuItem.name : 'Item';
+        await this.checkAndCreateLowStockNotification(
+          inv,
+          itemName,
+          inv.branch,
+          session
+        );
 
         updatedInventory = inv;
       });

@@ -7,6 +7,7 @@ router.use(protect);
 
 router.get('/pos-catalog', restrictTo('admin', 'manager', 'cashier'), restrictBranch, menuController.getPosCatalog);
 router.get('/images', restrictTo('admin', 'manager'), menuController.getMenuImages);
+router.post('/upload-image', restrictTo('admin', 'manager'), menuController.uploadMenuImage);
 router.get('/', menuController.getMenuItems);
 router.get('/:id', menuController.getMenuItemById);
 router.post('/', restrictTo('admin', 'manager'), menuController.createMenuItem);

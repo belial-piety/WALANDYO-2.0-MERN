@@ -8,6 +8,63 @@ const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 
 const IMAGE_DIR = path.join(__dirname, '..', 'public', 'menu-images');
+const UPLOAD_DIR = path.join(__dirname, '..', 'public', 'menu-uploads');
+
+const ALLOWED_UPLOAD_TYPES = new Map([
+  ['image/jpeg', '.jpg'],
+  ['image/png', '.png'],
+  ['image/webp', '.webp'],
+  ['image/gif', '.gif'],
+]);
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+exports.uploadMenuImage = asyncHandler(async (req, res, next) => {
+  const { fileName, mimeType, data } = req.body;
+
+  if (!fileName || !mimeType || !data) {
+    throw new AppError('Please select an image to upload.', 400);
+  }
+
+  const extension = ALLOWED_UPLOAD_TYPES.get(String(mimeType).toLowerCase());
+  if (!extension) {
+    throw new AppError('Only JPG, PNG, WEBP, and GIF images are allowed.', 400);
+  }
+
+  const match = String(data).match(/^data:([^;]+);base64,(.+)$/);
+  if (!match || match[1].toLowerCase() !== String(mimeType).toLowerCase()) {
+    throw new AppError('Invalid image upload data.', 400);
+  }
+
+  let buffer;
+  try {
+    buffer = Buffer.from(match[2], 'base64');
+  } catch (err) {
+    throw new AppError('Unable to decode uploaded image.', 400);
+  }
+
+  if (!buffer.length || buffer.length > MAX_UPLOAD_BYTES) {
+    throw new AppError('Image must be between 1 byte and 5 MB.', 400);
+  }
+
+  const safeBase = path
+    .basename(fileName, path.extname(fileName))
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'menu-item';
+  const uniqueName = `${safeBase}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${extension}`;
+
+  await fs.promises.writeFile(path.join(UPLOAD_DIR, uniqueName), buffer, { flag: 'wx' });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      filename: uniqueName,
+      url: `/uploads/menu-images/${encodeURIComponent(uniqueName)}`,
+    },
+  });
+});
 
 exports.getMenuImages = asyncHandler(async (req, res, next) => {
   let files = [];

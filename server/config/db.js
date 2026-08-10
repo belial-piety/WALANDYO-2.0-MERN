@@ -9,9 +9,12 @@ const connectDB = async () => {
       return mongoose.connection;
     }
 
-    let mongoUri = process.env.MONGODB_URI;
+    // Use a persistent local MongoDB replica set by default.
+    // The temporary in-memory database is now opt-in only via MONGODB_URI=embedded.
+    let mongoUri = process.env.MONGODB_URI ||
+      'mongodb://127.0.0.1:27017/walandyo_pos?replicaSet=rs0&directConnection=true';
 
-    if (!mongoUri || mongoUri === 'embedded') {
+    if (mongoUri === 'embedded') {
       if (!replSet) {
         console.log('[DB] Starting embedded MongoMemoryReplSet for local ACID transactions...');
         replSet = await MongoMemoryReplSet.create({
@@ -26,6 +29,7 @@ const connectDB = async () => {
     });
 
     console.log(`[DB] MongoDB Connected: ${conn.connection.host} (${conn.connection.name})`);
+    console.log(`[DB] Persistence mode: ${replSet ? 'TEMPORARY / IN-MEMORY' : 'PERSISTENT'}`);
     return conn;
   } catch (error) {
     console.error(`[DB Error] ${error.message}`);

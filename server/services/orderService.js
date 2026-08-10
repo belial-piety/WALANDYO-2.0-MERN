@@ -4,6 +4,7 @@ const MenuItem = require('../models/MenuItem');
 const Inventory = require('../models/Inventory');
 const StockMovement = require('../models/StockMovement');
 const OrderAuditLog = require('../models/OrderAuditLog');
+const Notification = require('../models/Notification');
 const Branch = require('../models/Branch');
 const AppError = require('../utils/appError');
 const inventoryService = require('./inventoryService');

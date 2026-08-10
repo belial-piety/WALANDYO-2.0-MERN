@@ -7,5 +7,6 @@ router.use(protect, restrictTo('admin', 'manager'));
 
 router.get('/daily-overview', reportController.getDailyOverview);
 router.get('/branch-performance', reportController.getBranchPerformance);
+router.get('/sales-analytics', reportController.getSalesAnalytics);
 
 module.exports = router;
